@@ -17,11 +17,40 @@ This project provides an ESPHome configuration and custom components to integrat
 - Appropriate cables (RJ45 to DB9/Wires).
 
 ## Quick Start
+
+
+For security reasons, sensitive information like WiFi passwords and API keys are stored in a separate file named secrets.yaml. This prevents you from accidentally sharing your credentials when sharing your configuration.
+Create a file named secrets.yaml in your ESPHome directory.
+Copy and paste the following template:
+
+```yaml
+# secrets.yaml
+wifi_ssid: "Your_WiFi_Name"
+wifi_password: "Your_WiFi_Password"
+# Generate a key using: esphome generate-key
+api_encryption_key: "Your_Generated_API_Key"
+# Password for OTA updates
+ota_password: "Your_OTA_Password"
+
 Add this to your ESPHome YAML configuration:
 
 ```yaml
+esphome:
+  name: easun-isolar
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
 packages:
-  easun_inverter:
+  easun_logic:
     url: github://gitofson/esphome-easun-isolar
     file: easun-smg-ii.yaml
     ref: v1.0.0
