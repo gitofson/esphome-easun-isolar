@@ -31,7 +31,7 @@ wifi_password: "Your_WiFi_Password"
 api_encryption_key: "Your_Generated_API_Key"
 # Password for OTA updates
 ota_password: "Your_OTA_Password"
-
+```
 Add this to your ESPHome YAML configuration:
 
 ```yaml
@@ -54,3 +54,4 @@ packages:
     url: github://gitofson/esphome-easun-isolar
     file: easun-smg-ii.yaml
     ref: v1.0.0
+```
