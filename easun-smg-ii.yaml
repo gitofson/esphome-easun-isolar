@@ -1,7 +1,3 @@
-esphome:
-  name: isolar-bridge
-  friendly_name: ISolar Bridge C6
-
 esp32:
   board: esp32-c6-devkitc-1
   variant: esp32c6
