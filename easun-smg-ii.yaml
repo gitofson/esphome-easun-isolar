@@ -1,0 +1,778 @@
+esphome:
+  name: isolar-bridge
+  friendly_name: ISolar Bridge C6
+
+esp32:
+  board: esp32-c6-devkitc-1
+  variant: esp32c6
+  framework:
+    type: esp-idf # C6 vyžaduje esp-idf pro plnou podporu všech funkcí
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO6
+  rx_pin: GPIO7
+  baud_rate: 9600
+
+modbus:
+  id: modbus_bus
+  uart_id: uart_bus
+
+modbus_controller:
+  - id: easun_inv
+    address: 0x01
+    modbus_id: modbus_bus
+    setup_priority: -10
+    update_interval: 25s
+
+    command_throttle: 100ms      
+    offline_skip_updates: 5      
+
+number:
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "Max Utility Charging Current"
+    address: 0x0281 
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "A"
+    min_value: 0
+    max_value: 100 # Uprav podle manuálu
+    step: 0.1      # Umožní v HA měnit po desetinách
+    mode: box
+    use_write_multiple: true 
+    
+    # Přepočet: Střídač (100) -> HA (10.0)
+    lambda: "return x * 0.1;"
+    
+    # Přepočet: HA (10.0) -> Střídač (100)
+    write_lambda: "return x * 10.0;"
+    
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "Max Utility Charging Current"
+    address: 0x0281  # Zkus tento registr, bývá hned vedle
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "A"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1  
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "ISolar Battery Voltage"
+    address: 0x025E  # Zkus tento registr, bývá hned vedle
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.1
+
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "ISolar Grid Frequency"
+    address: 0x025F # To je to tvoje 500
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Hz"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0064"
+    address: 0x0064
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0065"
+    address: 0x0065
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x006C"
+    address: 0x006C
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x006D"
+    address: 0x006D
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x00AB"
+    address: 0x00AB
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x00B8"
+    address: 0x00B8
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x00C9"
+    address: 0x00C9
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x00CB"
+    address: 0x00CB
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x00CE"
+    address: 0x00CE
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x00E3"
+    address: 0x00E3
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x00E6"
+    address: 0x00E6
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x00E7"
+    address: 0x00E7
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x00FD"
+    address: 0x00FD
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0115 (U bat?)"
+    address: 0x0115
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0116 (power in?)"
+    address: 0x0116
+    register_type: holding
+    value_type: S_WORD
+    unit_of_measurement: "W"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0117 (power out?)"
+    address: 0x0117
+    register_type: holding
+    value_type: S_WORD
+    unit_of_measurement: "W"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0118 -SoC"
+    address: 0x0118
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0119"
+    address: 0x0119
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x012E (Solar power 1 ?)"
+    address: 0x012E
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "W"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x012F"
+    address: 0x012F
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0130"
+    address: 0x0130
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0131"
+    address: 0x0131
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0152 (U utility in?)"
+    address: 0x0152
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.1    
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0154 - input utility power"
+    address: 0x0154
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "W"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0156 (Utility voltage?)"
+    address: 0x0156
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0157"
+    address: 0x0157
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0158"
+    address: 0x0158
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x015A - voltage?"
+    address: 0x015A
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x015B (solar i, p?)"
+    address: 0x015B
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x015C(Output Power)"
+    address: 0x015C
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "W"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x015D (Output PApparent ower)"
+    address: 0x015D
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "VA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x015E (Output Load Average)"
+    address: 0x015E
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x015F - SolarVoltage 1"
+    address: 0x015F
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.1    
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0160"
+    address: 0x0160
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0161"
+    address: 0x0161
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0185"
+    address: 0x0185
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0186"
+    address: 0x0186
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0187"
+    address: 0x0187
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x024E"
+    address: 0x024E
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x024F"
+    address: 0x024F
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0258"
+    address: 0x0258
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0259"
+    address: 0x0259
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x025A"
+    address: 0x025A
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x025B"
+    address: 0x025B
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x025C"
+    address: 0x025C
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x025D"
+    address: 0x025D
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x025E (output voltage?)"
+    address: 0x025E
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.1
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x025F (output frequency)"
+    address: 0x025F
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "Hz"
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01    
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0286"
+    address: 0x0286
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0287"
+    address: 0x0287
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x0288"
+    address: 0x0288
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x028A"
+    address: 0x028A
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x028B"
+    address: 0x028B
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x028C"
+    address: 0x028C
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x028D"
+    address: 0x028D
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x028E"
+    address: 0x028E
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x028F"
+    address: 0x028F
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02A5"
+    address: 0x02A5
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02A6"
+    address: 0x02A6
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02A7"
+    address: 0x02A7
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02A8"
+    address: 0x02A8
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02A9"
+    address: 0x02A9
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02AA"
+    address: 0x02AA
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02AB"
+    address: 0x02AB
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02AC"
+    address: 0x02AC
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02B1"
+    address: 0x02B1
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02B2"
+    address: 0x02B2
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02B5"
+    address: 0x02B5
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02B6"
+    address: 0x02B6
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02B8 - year"
+    address: 0x02B8
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "y"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02B9 - months"
+    address: 0x02B9
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "mo"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02BA -day"
+    address: 0x02BA
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "d"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02BB - hour"
+    address: 0x02BB
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "h"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02BC - min"
+    address: 0x02BC
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "m"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02BD - sec"
+    address: 0x02BD
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "s"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02BE"
+    address: 0x02BE
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02BF"
+    address: 0x02BF
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "0x02C0"
+    address: 0x02C0
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv    
+    name: "0x02C1"
+    address: 0x02C1
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv    
+    name: "0x02C2"
+    address: 0x02C3
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv    
+    name: "0x02C3"
+    address: 0x02C3
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv    
+    name: "0x02C4"
+    address: 0x02C4
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "NA"
+    accuracy_decimals: 2
+
+select:
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "ISolar Output Priority"
+    address: 0x0259 # Nechej tuto, vypadá nadějněji
+    value_type: U_WORD
+    use_write_multiple: yes # KLÍČOVÁ ZMĚNA - vynutí funkci 0x10 (16)
+    optionsmap:
+      "Utility": 0
+      "Solar-Utility-Battery (SUB)": 1
+      "Solar-Battery-Utility (SBU)": 2
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "ISolar Charger Source Priority"
+    address: 0x0278
+    value_type: U_WORD
+    use_write_multiple: yes 
+    optionsmap:
+      "Utility": 0
+      "SOF - Solar-First": 1
+      "SNU - Solar-And-Utility": 2     
+      "OSO - Only-Solar-Only": 3    
+      "SOR - Solar-Or-Utility-Return (SOR)": 4
