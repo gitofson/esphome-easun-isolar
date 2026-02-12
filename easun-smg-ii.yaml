@@ -1,13 +1,7 @@
-esp32:
-  board: esp32-c6-devkitc-1
-  variant: esp32c6
-  framework:
-    type: esp-idf # C6 vyžaduje esp-idf pro plnou podporu všech funkcí
-
 uart:
   id: uart_bus
-  tx_pin: GPIO6
-  rx_pin: GPIO7
+  tx_pin: ${uart_tx_pin}
+  rx_pin: ${uart_rx_pin}
   baud_rate: 9600
 
 modbus:
