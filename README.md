@@ -31,28 +31,55 @@ wifi_password: "Your_WiFi_Password"
 # Generate a key using: esphome generate-key
 api_encryption_key: "Your_Generated_API_Key"
 # Password for OTA updates
-ota_password: "Your_OTA_Password"
+ota_password: "Your_OTA_Password if any"
 ```
 Add this to your ESPHome YAML configuration:
 
 ```yaml
 esphome:
-  name: easun-isolar
+  name: isolar-bridge
+  friendly_name: ISolar Bridge C6
 
+esp32:
+  board: esp32-c6-devkitc-1
+  variant: esp32c6
+  framework:
+    type: esp-idf # C6 vyžaduje esp-idf pro plnou podporu všech funkcí
+
+# Native API pro Home Assistant (Tohle nahrazuje MQTT)
 api:
   encryption:
     key: !secret api_encryption_key
 
 ota:
-  password: !secret ota_password
+  - platform: esphome
+#   password: !secret ota_password
+
+logger:
+  level: DEBUG
+  baud_rate: 0 # Tohle vypne HW UART, ale nechá běžet síťový log
+
+# Pro jistotu zapni webové rozhraní, ať se tam můžeš kouknout napřímo přes IP
+#web_server:
+#  port: 80
+
+captive_portal:
+# for wifi ap
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  ap:
+    ssid: "esphome-easun-isolar Fallback Hotspot"
+    password: "myfbpass"
+
+substitutions:
+  uart_tx_pin: GPIO6
+  uart_rx_pin: GPIO7
 
 packages:
   easun_logic:
-    url: github://gitofson/esphome-easun-isolar
+    url: https://github.com/gitofson/esphome-easun-isolar
     file: easun-smg-ii.yaml
-    ref: v1.0.0
+    ref: main
 ```
