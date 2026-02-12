@@ -9,13 +9,37 @@ This project provides an ESPHome configuration and custom components to integrat
 ## Features
 - Real-time data monitoring (PV Voltage, Battery Capacity, Load Wattage, etc.)
 - Modbus RTU communication over RS232.
-- Easy integration as an `external_component`.
+- Easy integration using ESPHome Packages.
 - Support for Home Assistant Energy Dashboard.
 
 ## Hardware Requirements
 - **ESP32** (recommended) or ESP8266.
 - **RS232 to TTL Converter** (e.g., MAX3232) to connect the ESP to the inverter's RJ45 port.
 - Appropriate cables (RJ45 to DB9/Wires).
+
+## Wiring Diagram
+
+> [!CAUTION]
+> Never connect the inverter's RJ45 port directly to the ESP32 pins! You must use an **RS232-to-TTL converter** (e.g., MAX3232). Direct connection will destroy your ESP32.
+
+### RJ45 to DB9 (Standard Inverter Cable)
+If you are using a standard RJ45-to-DB9 cable (often supplied with the inverter) and connecting it to a MAX3232 board with a DB9 connector:
+
+| Inverter (RJ45) | DB9 Pin | Signal | Note |
+| :--- | :--- | :--- | :--- |
+| **Pin 1** | **Pin 2** | RS232-TX | Connects to DB9 RX |
+| **Pin 2** | **Pin 3** | RS232-RX | Connects to DB9 TX |
+| **Pin 8** | **Pin 5** | GND | Common Ground |
+
+### RS232-TTL Converter to ESP32 (C6 Example)
+Wiring between the converter module and your ESP:
+
+| MAX3232 Module | ESP32-C6 Pin | Description |
+| :--- | :--- | :--- |
+| **VCC** | **3.3V** | Power (check your module voltage!) |
+| **GND** | **GND** | Ground |
+| **TXD** | **GPIO7** (RX) | Transmit to ESP Receive |
+| **RXD** | **GPIO6** (TX) | Receive from ESP Transmit |
 
 ## Quick Start
 
