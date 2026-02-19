@@ -102,4 +102,5 @@ packages:
     url: https://github.com/gitofson/esphome-easun-isolar
     file: easun-smg-ii.yaml
     ref: main
+    refresh: 0s
 ```
