@@ -663,9 +663,9 @@ select:
     value_type: U_WORD
     use_write_multiple: yes # KLÍČOVÁ ZMĚNA - vynutí funkci 0x10 (16)
     optionsmap:
-      "Utility": 0
-      "Solar-Utility-Battery (SUB)": 1
-      "Solar-Battery-Utility (SBU)": 2
+      "Solar->Utility->Battery (SUB)": 1
+      "Solar->Battery->Utility (SBU)": 2
+      "Solar+Utility->Battery (SUF)": 3
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "ISolar Charger Source Priority"
@@ -673,7 +673,6 @@ select:
     value_type: U_WORD
     use_write_multiple: yes 
     optionsmap:
-      "Utility": 0
       "SOF - Solar-First": 1
       "SNU - Solar-And-Utility": 2     
       "OSO - Only-Solar-Only": 3    
