@@ -68,7 +68,7 @@ esp32:
   board: esp32-c6-devkitc-1
   variant: esp32c6
   framework:
-    type: esp-idf # C6 vyžaduje esp-idf pro plnou podporu všech funkcí
+    type: esp-idf # for C6 
 
 # Native API pro Home Assistant (Tohle nahrazuje MQTT)
 api:
@@ -81,11 +81,7 @@ ota:
 
 logger:
   level: DEBUG
-  baud_rate: 0 # Tohle vypne HW UART, ale nechá běžet síťový log
-
-# Pro jistotu zapni webové rozhraní, ať se tam můžeš kouknout napřímo přes IP
-#web_server:
-#  port: 80
+  baud_rate: 0 # Turn off HW UART and net log running
 
 captive_portal:
 # for wifi ap
