@@ -21,6 +21,20 @@ modbus_controller:
 number:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
+    name: "Low DC cut-off voltage or Soc"
+    address: 0x027f
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V%"
+    min_value: 0
+    max_value: 160
+    step: 0.1
+    mode: box
+    use_write_multiple: true     
+    lambda: "return x * 0.1;"
+    write_lambda: "return x * 10.0;"
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
     name: "Max Charging Current"
     address: 0x0280
     register_type: holding
