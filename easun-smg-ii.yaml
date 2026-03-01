@@ -648,34 +648,41 @@ sensor:
   #  accuracy_decimals: 2
   - platform: modbus_controller
     id: inv_year
-    address: 0x0113
+    address: 0x02B8  # První registr z toho velkého bloku donglu
     register_type: holding
+    # Tento parametr vynutí načtení celého bloku najednou jako dongle
+    bitmask: 0xFFFF 
+    force_new_range: true    
+    value_type: U_WORD
     internal: true
+
   - platform: modbus_controller
     id: inv_month
-    address: 0x0114
-    register_type: holding
-    internal: true
-  - platform: modbus_controller
-    id: inv_day
-    address: 0x0115
+    address: 0x02B9
     register_type: holding
     internal: true
 
-  # Tyto tři jsi říkal, že fungovaly (H:M:S)
+  - platform: modbus_controller
+    id: inv_day
+    address: 0x02BA
+    register_type: holding
+    internal: true
+
   - platform: modbus_controller
     id: inv_hour
     address: 0x02BB
     register_type: holding
     internal: true
+
   - platform: modbus_controller
     id: inv_min
     address: 0x02BC
     register_type: holding
     internal: true
+
   - platform: modbus_controller
     id: inv_sec
-    address: 0x02BD  # Tady se to hýbalo
+    address: 0x02BD
     register_type: holding
     internal: true
     
