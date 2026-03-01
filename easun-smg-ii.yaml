@@ -185,8 +185,8 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "NA"
     accuracy_decimals: 2
+    
   - platform: modbus_controller
-    modbus_controller_id: easun_inv  - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_year
     address: 0x002D  # ROK
