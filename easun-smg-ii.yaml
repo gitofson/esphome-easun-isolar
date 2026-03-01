@@ -123,6 +123,32 @@ number:
     write_lambda: "return x * 10.0;"  
 sensor:
   - platform: modbus_controller
+    id: test_113
+    address: 0x0113 # PV Voltage (tvých 525)
+    register_type: holding
+    internal: false
+  - platform: modbus_controller
+    id: test_114
+    address: 0x0114
+    register_type: holding
+  - platform: modbus_controller
+    id: test_115
+    address: 0x0115
+    register_type: holding
+  - platform: modbus_controller
+    id: test_116
+    address: 0x0116
+    register_type: holding
+  - platform: modbus_controller
+    id: test_117
+    address: 0x0117
+    register_type: holding
+  - platform: modbus_controller
+    id: test_118
+    address: 0x0118 # Tady jsi měl SOC (32%)
+    register_type: holding
+    
+  - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "Max Utility Charging Current"
     address: 0x0281  # Zkus tento registr, bývá hned vedle
