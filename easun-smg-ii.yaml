@@ -750,40 +750,36 @@ sensor:
 text_sensor:
   - platform: template
     name: "Inverter Real Time"
-    icon: "mdi:clock-digital"
+    icon: "mdi:clock-check-outline"
     update_interval: 2s
     lambda: |-
+      auto cal = id(sntp_time).now();
       char str[30];
-      // Rok 0-99 převedeme na 20xx
-      int year = (int)id(inv_year).state;
-      if (year < 100) year += 2000;
-      
-      sprintf(str, "%02.0f.%02.0f.%d %02.0f:%02.0f:%02.0f", 
-        id(inv_day).state, id(inv_month).state, year,
-        id(inv_hour).state, id(inv_min).state, id(inv_sec).state);
-      return {str};
+      if (cal.is_valid()) {
+        sprintf(str, "%02d.%02d.%d %02.0f:%02.0f:%02.0f", 
+          cal.day_of_month, cal.month, cal.year,
+          id(inv_hour).state, id(inv_min).state, id(inv_sec).state);
+      } else {
+        sprintf(str, "Syncing... %02.0f:%02.0f:%02.0f", 
+          id(inv_hour).state, id(inv_min).state, id(inv_sec).state);
+      }
+      return {(std::string)str};
 button:
   - platform: template
-    name: "Sync Inverter Time (H:M:S)"
-    icon: "mdi:clock-fast"
+    entity_category: "config"
+    name: "Sync Inverter Clock"
+    icon: "mdi:time-sync"
     on_press:
       lambda: |-
         auto cal = id(sntp_time).now();
         if (cal.is_valid()) {
-          // Vytvoříme vektor pro 3 registry času
           std::vector<uint16_t> data;
-          data.push_back((uint16_t)cal.hour);   // 0x02BB
-          data.push_back((uint16_t)cal.minute); // 0x02BC
-          data.push_back((uint16_t)cal.second); // 0x02BD
-
-          // Zápis 3 registrů počínaje adresou 0x02BB
+          data.push_back((uint16_t)cal.hour);
+          data.push_back((uint16_t)cal.minute);
+          data.push_back((uint16_t)cal.second);
           auto req = esphome::modbus_controller::ModbusCommandItem::create_write_multiple_command(
-            id(easun_inv), 0x02BB, data.size(), data);
+            id(easun_inv), 0x02BB, 3, data);
           id(easun_inv).queue_command(req);
-          
-          ESP_LOGD("sync", "Odeslán hromadný zápis času: %02d:%02d:%02d", cal.hour, cal.minute, cal.second);
-        } else {
-          ESP_LOGW("sync", "Sync selhal - NTP čas není validní!");
         }
 select:
   - platform: modbus_controller
