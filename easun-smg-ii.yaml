@@ -749,6 +749,29 @@ button:
           ESP_LOGW("sync", "Sync selhal - NTP čas není validní!");
         }
   - platform: template
+    name: "Sync Full Time & Date"
+    on_press:
+      lambda: |-
+        auto cal = id(sntp_time).now();
+        if (cal.is_valid()) {
+          std::vector<uint16_t> data;
+          // Zkusíme blok 7 registrů (0x02B7 až 0x02BD)
+          data.push_back(cal.month);          // 0x02B7
+          data.push_back(cal.day_of_month);   // 0x02B8
+          data.push_back(0);                  // 0x02B9 (vypadá jako vata)
+          data.push_back(0);                  // 0x02BA (vypadá jako vata)
+          data.push_back(cal.hour);           // 0x02BB
+          data.push_back(cal.minute);         // 0x02BC
+          data.push_back(cal.second);         // 0x02BD
+
+          auto req = esphome::modbus_controller::ModbusCommandItem::create_write_multiple_command(
+            id(easun_inv), 0x02B7, data.size(), data);
+          id(easun_inv).queue_command(req);
+          
+          ESP_LOGD("sync", "Odeslán blok 0x02B7-BD: %02d.%02d. %02d:%02d:%02d", 
+                   cal.day_of_month, cal.month, cal.hour, cal.minute, cal.second);
+        }        
+  - platform: template
     name: "Sync Test"
     icon: "mdi:time-sync"
     entity_category: "config"            
