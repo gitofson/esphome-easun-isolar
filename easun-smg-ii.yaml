@@ -727,23 +727,26 @@ text_sensor:
       return {(std::string)str};
 button:
   - platform: template
-    name: "Sync Time (Single Write)"
+    name: "Sync Inverter Time (H:M:S)"
+    icon: "mdi:clock-fast"
     on_press:
       lambda: |-
         auto cal = id(sntp_time).now();
         if (cal.is_valid()) {
-          // Posíláme postupně s pauzou 200ms mezi registry
-          id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(id(easun_inv), 0x02BB, (uint16_t)cal.hour));
-          
-          id(easun_inv).set_timeout("sync_min", 200, [=]() {
-            id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(id(easun_inv), 0x02BC, (uint16_t)cal.minute));
-          });
+          // Vytvoříme vektor pro 3 registry času
+          std::vector<uint16_t> data;
+          data.push_back((uint16_t)cal.hour);   // 0x02BB
+          data.push_back((uint16_t)cal.minute); // 0x02BC
+          data.push_back((uint16_t)cal.second); // 0x02BD
 
-          id(easun_inv).set_timeout("sync_sec", 400, [=]() {
-            id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(id(easun_inv), 0x02BD, (uint16_t)cal.second));
-          });
+          // Zápis 3 registrů počínaje adresou 0x02BB
+          auto req = esphome::modbus_controller::ModbusCommandItem::create_write_multiple_command(
+            id(easun_inv), 0x02BB, data.size(), data);
+          id(easun_inv).queue_command(req);
           
-          ESP_LOGD("sync", "Čas odeslán s prodlevami.");
+          ESP_LOGD("sync", "Odeslán hromadný zápis času: %02d:%02d:%02d", cal.hour, cal.minute, cal.second);
+        } else {
+          ESP_LOGW("sync", "Sync selhal - NTP čas není validní!");
         }
   - platform: template
     name: "Sync Test"
