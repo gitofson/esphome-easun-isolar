@@ -125,7 +125,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "DEBUG SECONDS"
-    address: 0xB006  # Zkus tuto adresu
+    address: 0x0118  # Zkus tuto adresu
     register_type: holding
     value_type: U_WORD
     
@@ -656,7 +656,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_year
-    address: 0xB001  # ROK
+    address: 0x0113  # ROK
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -664,7 +664,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_month
-    address: 0xB002  # MĚSÍC
+    address: 0x0114  # MĚSÍC
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -672,7 +672,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_day
-    address: 0xB003  # DEN
+    address: 0x0115  # DEN
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -680,7 +680,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_hour
-    address: 0xB004  # HODINA
+    address: 0x0116  # HODINA
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -688,7 +688,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_min
-    address: 0xB005  # MINUTA
+    address: 0x0117  # MINUTA
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -696,7 +696,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_sec
-    address: 0xB006  # SEKUNDA
+    address: 0x0118  # SEKUNDA
     register_type: holding
     value_type: U_WORD
     internal: true
