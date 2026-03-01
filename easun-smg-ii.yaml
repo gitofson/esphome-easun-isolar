@@ -178,7 +178,53 @@ sensor:
     unit_of_measurement: "NA"
     accuracy_decimals: 2
   - platform: modbus_controller
+    modbus_controller_id: easun_inv  - platform: modbus_controller
     modbus_controller_id: easun_inv
+    id: inv_year
+    address: 0x002D  # ROK
+    register_type: holding
+    value_type: U_WORD
+    internal: true
+
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    id: inv_month
+    address: 0x002E  # MĚSÍC
+    register_type: holding
+    value_type: U_WORD
+    internal: true
+
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    id: inv_day
+    address: 0x002F  # DEN
+    register_type: holding
+    value_type: U_WORD
+    internal: true
+
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    id: inv_hour
+    address: 0x0030  # HODINA
+    register_type: holding
+    value_type: U_WORD
+    internal: true
+
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    id: inv_min
+    address: 0x0031  # MINUTA
+    register_type: holding
+    value_type: U_WORD
+    internal: true
+
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    id: inv_sec
+    address: 0x0032  # SEKUNDA
+    register_type: holding
+    value_type: U_WORD
+    internal: true
     name: "0x006D"
     address: 0x006D
     register_type: holding
@@ -656,29 +702,49 @@ sensor:
   #  accuracy_decimals: 2
   sensor:
   - platform: modbus_controller
+    modbus_controller_id: easun_inv
     id: inv_year
-    address: 0x012E  # Zkus tento pro ROK
+    address: 0x002D  # ROK
     register_type: holding
     value_type: U_WORD
     internal: true
 
   - platform: modbus_controller
-    id: inv_month_day
-    address: 0x012F  # Tady je pravděpodobně Měsíc a Den dohromady
+    modbus_controller_id: easun_inv
+    id: inv_month
+    address: 0x002E  # MĚSÍC
     register_type: holding
     value_type: U_WORD
     internal: true
 
   - platform: modbus_controller
-    id: inv_hour_min
-    address: 0x0130  # Tady je pravděpodobně Hodina a Minuta
+    modbus_controller_id: easun_inv
+    id: inv_day
+    address: 0x002F  # DEN
     register_type: holding
     value_type: U_WORD
     internal: true
 
   - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    id: inv_hour
+    address: 0x0030  # HODINA
+    register_type: holding
+    value_type: U_WORD
+    internal: true
+
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    id: inv_min
+    address: 0x0031  # MINUTA
+    register_type: holding
+    value_type: U_WORD
+    internal: true
+
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
     id: inv_sec
-    address: 0x0131  # Tady jsou Sekundy
+    address: 0x0032  # SEKUNDA
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -724,25 +790,9 @@ text_sensor:
     icon: "mdi:calendar-clock"
     update_interval: 5s
     lambda: |-
-      // Rozklad registru Month_Day (0x012F): 
-      // Horní bajt (High) = Měsíc, Dolní bajt (Low) = Den
-      int month = (int)id(inv_month_day).state >> 8;
-      int day   = (int)id(inv_month_day).state & 0xFF;
-
-      // Rozklad registru Hour_Min (0x0130):
-      // Horní bajt = Hodina, Dolní bajt = Minuta
-      int hour  = (int)id(inv_hour_min).state >> 8;
-      int min   = (int)id(inv_hour_min).state & 0xFF;
-
-      // Sekundy jsou v 0x0131 samostatně
-      int sec   = (int)id(inv_sec).state;
-      
-      // Rok v 0x012E
-      int year  = (int)id(inv_year).state;
-
-      char str[20];
       sprintf(str, "%02d.%02d.20%02d %02d:%02d:%02d", 
-              day, month, year, hour, min, sec);
+              (int)id(inv_day).state, (int)id(inv_month).state, (int)id(inv_year).state,
+              (int)id(inv_hour).state, (int)id(inv_min).state, (int)id(inv_sec).state);
       return {str};
 button:
   - platform: template
