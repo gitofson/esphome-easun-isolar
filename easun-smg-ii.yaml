@@ -123,7 +123,7 @@ number:
 sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    id: inv_year_0x02B7
+    id: inv_reg_2b7
     address: 0x02B7 # Zkus 0x02B7 pokud tohle bude 0
     register_type: holding
     value_type: U_WORD
@@ -761,6 +761,9 @@ button:
     entity_category: "config"
     on_press:
       lambda: |-
+        ESP_LOGD("date_debug", "Reg 2B7: %X, 2B8: %X, 2B9: %X, 2BA: %X", 
+                (int)id(inv_reg_2b7).state, (int)id(inv_year).state, 
+                (int)id(inv_month).state, (int)id(inv_day).state);      
         // Zkusíme zapsat jen sekundy na 0x02BD
         uint16_t test_sec = 15; 
         auto req = esphome::modbus_controller::ModbusCommandItem::create_write_single_command(
