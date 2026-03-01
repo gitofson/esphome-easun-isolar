@@ -33,6 +33,30 @@ number:
     use_write_multiple: true 
   - platform: modbus_controller
     modbus_controller_id: easun_inv
+    name: "Battery Low Cut Off SOC"
+    address: 0x028A
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: box
+    use_write_multiple: true 
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "Low DC Recovery SOC In AC Mode"
+    address: 0x0288
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "%"
+    min_value: 0
+    max_value: 100
+    step: 1
+    mode: box
+    use_write_multiple: true      
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
     name: "Off-grid mode bat low voltage protection point"
     address: 0x0286
     register_type: holding
@@ -712,7 +736,7 @@ sensor:
 select:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "ISolar Output Priority"
+    name: "Output Priority"
     address: 0x0259 # Nechej tuto, vypadá nadějněji
     value_type: U_WORD
     use_write_multiple: yes # KLÍČOVÁ ZMĚNA - vynutí funkci 0x10 (16)
@@ -722,7 +746,7 @@ select:
       "Solar+Utility->Battery (SUF)": 3
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "ISolar Charger Source Priority"
+    name: "Charger Source Priority"
     address: 0x0278
     value_type: U_WORD
     use_write_multiple: yes 
@@ -731,3 +755,14 @@ select:
       "SNU - Solar-And-Utility": 2     
       "OSO - Only-Solar-Only": 3    
       "SOR - Solar-Or-Utility-Return (SOR)": 4
+  - platform: modbus_controller
+    entity_category: "config"  # Tímto se v HA přesune do sekce nastavení
+    icon: "mdi:battery-alert"
+    modbus_controller_id: easun_inv
+    name: "Battery Type"
+    address: 0x0276
+    value_type: U_WORD
+    use_write_multiple: yes 
+    optionsmap:
+      "USE - User defined": 2
+      "Li4 - Protocol 2 from inverter supplier": 6      
