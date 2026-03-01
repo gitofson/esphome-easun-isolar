@@ -653,7 +653,7 @@ sensor:
   #  value_type: U_WORD
   #  unit_of_measurement: "NA"
   #  accuracy_decimals: 2
-    - platform: modbus_controller
+  - platform: modbus_controller
     id: inv_year
     address: 0x02B5  # Zkus 2B5 místo 2B8
     register_type: holding
