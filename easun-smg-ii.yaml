@@ -121,21 +121,7 @@ number:
     lambda: "return x * 0.1;"
     # Přepočet: HA (10.0) -> Střídač (100)
     write_lambda: "return x * 10.0;"  
-sensor:
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    id: inv_reg_2b7
-    address: 0x02B7 # Zkus 0x02B7 pokud tohle bude 0
-    register_type: holding
-    value_type: U_WORD
-    #internal: true
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "Test Register 283"
-    address: 0x0283 # Zkusme registry kousek vedle tvého funkčního 0x0287
-    register_type: holding
-    value_type: U_WORD
-    
+sensor:    
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "Max Utility Charging Current"
@@ -668,42 +654,34 @@ sensor:
   #  value_type: U_WORD
   #  unit_of_measurement: "NA"
   #  accuracy_decimals: 2
+  sensor:
   - platform: modbus_controller
-    modbus_controller_id: easun_inv
     id: inv_year
-    address: 0x02B8
+    address: 0x012E  # Zkus tento pro ROK
     register_type: holding
     value_type: U_WORD
     internal: true
-    # Tento senzor donutí kontroler načíst 6 registrů v kuse
-    bitmask: 0xFFFF 
-    force_new_range: true
-  # Ostatní senzory "naslouchají" na stejné adrese s offsetem, ale neposílají vlastní dotaz
+
   - platform: modbus_controller
-    id: inv_month
-    address: 0x02B9
-    internal: true
+    id: inv_month_day
+    address: 0x012F  # Tady je pravděpodobně Měsíc a Den dohromady
     register_type: holding
+    value_type: U_WORD
+    internal: true
+
   - platform: modbus_controller
-    id: inv_day
-    address: 0x02BA
-    internal: true
+    id: inv_hour_min
+    address: 0x0130  # Tady je pravděpodobně Hodina a Minuta
     register_type: holding
-  - platform: modbus_controller
-    id: inv_hour
-    address: 0x02BB
+    value_type: U_WORD
     internal: true
-    register_type: holding
-  - platform: modbus_controller
-    id: inv_min
-    address: 0x02BC
-    internal: true
-    register_type: holding
+
   - platform: modbus_controller
     id: inv_sec
-    address: 0x02BD
-    internal: true
+    address: 0x0131  # Tady jsou Sekundy
     register_type: holding
+    value_type: U_WORD
+    internal: true
     
   - platform: modbus_controller
     modbus_controller_id: easun_inv
@@ -746,14 +724,25 @@ text_sensor:
     icon: "mdi:calendar-clock"
     update_interval: 5s
     lambda: |-
-      // Přidáme výpis v HEX formátu do logu, abychom viděli BCD
-      ESP_LOGD("modbus_debug", "HEX Year: %04X, Month: %04X, Day: %04X", 
-               (int)id(inv_year).state, (int)id(inv_month).state, (int)id(inv_day).state);
-         
+      // Rozklad registru Month_Day (0x012F): 
+      // Horní bajt (High) = Měsíc, Dolní bajt (Low) = Den
+      int month = (int)id(inv_month_day).state >> 8;
+      int day   = (int)id(inv_month_day).state & 0xFF;
+
+      // Rozklad registru Hour_Min (0x0130):
+      // Horní bajt = Hodina, Dolní bajt = Minuta
+      int hour  = (int)id(inv_hour_min).state >> 8;
+      int min   = (int)id(inv_hour_min).state & 0xFF;
+
+      // Sekundy jsou v 0x0131 samostatně
+      int sec   = (int)id(inv_sec).state;
+      
+      // Rok v 0x012E
+      int year  = (int)id(inv_year).state;
+
       char str[20];
-      sprintf(str, "%02.0f.%02.0f.20%02.0f %02.0f:%02.0f:%02.0f", 
-        id(inv_day).state, id(inv_month).state, id(inv_year).state,
-        id(inv_hour).state, id(inv_min).state, id(inv_sec).state);
+      sprintf(str, "%02d.%02d.20%02d %02d:%02d:%02d", 
+              day, month, year, hour, min, sec);
       return {str};
 button:
   - platform: template
