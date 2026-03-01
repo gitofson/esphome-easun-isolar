@@ -4,6 +4,10 @@ uart:
   rx_pin: ${uart_rx_pin}
   baud_rate: 9600
 
+time:
+  - platform: sntp
+    id: sntp_time
+    
 modbus:
   id: modbus_bus
   uart_id: uart_bus
@@ -651,52 +655,41 @@ sensor:
   #  accuracy_decimals: 2
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "0x02B8 - year"
+    id: inv_year
     address: 0x02B8
     register_type: holding
     value_type: U_WORD
-    unit_of_measurement: "y"
-    accuracy_decimals: 2
+    internal: true
+    # Tento senzor donutí kontroler načíst 6 registrů v kuse
+    bitmask: 0xFFFF 
+    force_new_range: true
+  # Ostatní senzory "naslouchají" na stejné adrese s offsetem, ale neposílají vlastní dotaz
   - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x02B9 - months"
+    id: inv_month
     address: 0x02B9
+    internal: true
     register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "mo"
-    accuracy_decimals: 2
   - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x02BA -day"
+    id: inv_day
     address: 0x02BA
+    internal: true
     register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "d"
-    accuracy_decimals: 2
   - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x02BB - hour"
+    id: inv_hour
     address: 0x02BB
+    internal: true
     register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "h"
-    accuracy_decimals: 2
   - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x02BC - min"
+    id: inv_min
     address: 0x02BC
+    internal: true
     register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "m"
-    accuracy_decimals: 2
   - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x02BD - sec"
+    id: inv_sec
     address: 0x02BD
+    internal: true
     register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "s"
-    accuracy_decimals: 2
+    
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "0x02BE"
@@ -732,7 +725,39 @@ sensor:
   #  value_type: U_WORD
   #  unit_of_measurement: "NA"
   #  accuracy_decimals: 2
-
+text_sensor:
+  - platform: template
+    name: "Inverter Date and Time"
+    icon: "mdi:calendar-clock"
+    update_interval: 5s
+    lambda: |-
+      char str[20];
+      sprintf(str, "%02.0f.%02.0f.20%02.0f %02.0f:%02.0f:%02.0f", 
+        id(inv_day).state, id(inv_month).state, id(inv_year).state,
+        id(inv_hour).state, id(inv_min).state, id(inv_sec).state);
+      return {str};
+button:
+  - platform: template
+    name: "Sync Inverter Time with HA"
+    icon: "mdi:time-sync"
+    entity_category: "config"
+    on_press:
+      lambda: |-
+        auto cal = id(sntp_time).now(); // Předpokládá, že máš v yaml 'time: - platform: sntp'
+        if (cal.is_valid()) {
+          // Funkční kód 0x10 (Write Multiple) pro blok 6 registrů od 0x02B8
+          uint16_t data[6];
+          data[0] = cal.year - 2000;
+          data[1] = cal.month;
+          data[2] = cal.day_of_month;
+          data[3] = cal.hour;
+          data[4] = cal.minute;
+          data[5] = cal.second;
+          
+          auto req = esphome::modbus_controller::ModbusCommandItem::create_write_multiple_command(
+            id(easun_inv), 0x02B8, 6, data);
+          id(easun_inv).queue_command(req);
+        }      
 select:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
