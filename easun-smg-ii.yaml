@@ -11,6 +11,7 @@ time:
 modbus:
   id: modbus_bus
   uart_id: uart_bus
+  #timeout: 500ms
 
 modbus_controller:
   - id: easun_inv
@@ -769,6 +770,28 @@ button:
         auto req = esphome::modbus_controller::ModbusCommandItem::create_write_single_command(
           id(easun_inv), 0x02BD, test_sec);
         id(easun_inv).queue_command(req);
+
+            name: "Sync Inverter Time with HA"
+  - platform: template
+    name: "Sync Test"
+    icon: "mdi:time-sync"
+    entity_category: "config"            
+    on_press:
+      lambda: |-
+        auto cal = id(sntp_time).now();
+        if (cal.is_valid()) {
+          // Zápis času (H:M:S) na ověřené adresy
+          id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(id(easun_inv), 0x02BB, (uint16_t)cal.hour));
+          id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(id(easun_inv), 0x02BC, (uint16_t)cal.minute));
+          id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(id(easun_inv), 0x02BD, (uint16_t)cal.second));
+          
+          // Zápis data na TESTOVACÍ adresy (0x012B-0x012D)
+          id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(id(easun_inv), 0x012B, (uint16_t)(cal.year - 2000)));
+          id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(id(easun_inv), 0x012C, (uint16_t)cal.month));
+          id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(id(easun_inv), 0x012D, (uint16_t)cal.day_of_month));
+          
+          ESP_LOGD("modbus_sync", "Odeslány příkazy pro synchronizaci (Single Write)");
+        }
 select:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
