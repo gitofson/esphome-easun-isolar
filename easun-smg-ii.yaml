@@ -761,16 +761,16 @@ button:
     icon: "mdi:time-sync"
     entity_category: "config"
     on_press:
-    lambda: |-
-      // Přidáme výpis v HEX formátu do logu, abychom viděli BCD
-      ESP_LOGD("modbus_debug", "HEX Year: %04X, Month: %04X, Day: %04X", 
-               (int)id(inv_year).state, (int)id(inv_month).state, (int)id(inv_day).state);
-      
-      char str[30];
-      sprintf(str, "%02d.%02d.20%02d %02d:%02d:%02d", 
-        (int)id(inv_day).state, (int)id(inv_month).state, (int)id(inv_year).state,
-        (int)id(inv_hour).state, (int)id(inv_min).state, (int)id(inv_sec).state);
-      return {str};
+      lambda: |-
+        // Přidáme výpis v HEX formátu do logu, abychom viděli BCD
+        ESP_LOGD("modbus_debug", "HEX Year: %04X, Month: %04X, Day: %04X", 
+                 (int)id(inv_year).state, (int)id(inv_month).state, (int)id(inv_day).state);
+        
+        char str[30];
+        sprintf(str, "%02d.%02d.20%02d %02d:%02d:%02d", 
+          (int)id(inv_day).state, (int)id(inv_month).state, (int)id(inv_year).state,
+          (int)id(inv_hour).state, (int)id(inv_min).state, (int)id(inv_sec).state);
+        return {str};
   - platform: template
     name: "Sync Test"
     icon: "mdi:time-sync"
