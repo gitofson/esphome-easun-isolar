@@ -743,21 +743,25 @@ button:
     entity_category: "config"
     on_press:
       lambda: |-
-        auto cal = id(sntp_time).now(); // Předpokládá, že máš v yaml 'time: - platform: sntp'
+        auto cal = id(sntp_time).now();
         if (cal.is_valid()) {
-          // Funkční kód 0x10 (Write Multiple) pro blok 6 registrů od 0x02B8
-          uint16_t data[6];
-          data[0] = cal.year - 2000;
-          data[1] = cal.month;
-          data[2] = cal.day_of_month;
-          data[3] = cal.hour;
-          data[4] = cal.minute;
-          data[5] = cal.second;
+          // Vytvoříme vektor pro 6 registrů
+          std::vector<uint16_t> data;
+          data.push_back(cal.year - 2000); // 0x02B8: Rok
+          data.push_back(cal.month);        // 0x02B9: Měsíc
+          data.push_back(cal.day_of_month); // 0x02BA: Den
+          data.push_back(cal.hour);         // 0x02BB: Hodina
+          data.push_back(cal.minute);       // 0x02BC: Minuta
+          data.push_back(cal.second);       // 0x02BD: Sekunda
           
+          // Správné volání příkazu pro zápis více registrů
           auto req = esphome::modbus_controller::ModbusCommandItem::create_write_multiple_command(
-            id(easun_inv), 0x02B8, 6, data);
+            id(easun_inv), 0x02B8, data.size(), data);
           id(easun_inv).queue_command(req);
-        }      
+          ESP_LOGD("modbus_sync", "Čas v měniči byl synchronizován.");
+        } else {
+          ESP_LOGW("modbus_sync", "Synchronizace selhala - čas z NTP není k dispozici.");
+        }    
 select:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
