@@ -723,15 +723,19 @@ sensor:
   #  accuracy_decimals: 2
 text_sensor:
   - platform: template
-    name: "Inverter Time"
-    icon: "mdi:clock-check"
+    name: "Inverter Real Time"
+    icon: "mdi:clock-digital"
+    update_interval: 2s
     lambda: |-
       char str[30];
-      // Datum vypisujeme staticky, čas dynamicky z ověřených registrů
-      sprintf(str, "01.03.2026 %02.0f:%02.0f:%02.0f", 
+      // Rok 0-99 převedeme na 20xx
+      int year = (int)id(inv_year).state;
+      if (year < 100) year += 2000;
+      
+      sprintf(str, "%02.0f.%02.0f.%d %02.0f:%02.0f:%02.0f", 
+        id(inv_day).state, id(inv_month).state, year,
         id(inv_hour).state, id(inv_min).state, id(inv_sec).state);
-      return {(std::string)str};
-    update_interval: 2s
+      return {str};
 button:
   - platform: template
     name: "Sync Inverter Time (H:M:S)"
