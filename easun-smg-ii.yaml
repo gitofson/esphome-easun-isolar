@@ -28,7 +28,7 @@ number:
     unit_of_measurement: "%"
     min_value: 0
     max_value: 100
-    step: 0.1
+    step: 1
     mode: box
     use_write_multiple: true 
   - platform: modbus_controller
@@ -38,13 +38,13 @@ number:
     register_type: holding
     value_type: U_WORD
     unit_of_measurement: "V"
-    min_value: 0
-    max_value: 100
+    min_value: 44
+    max_value: 58
     step: 0.1
     mode: box
     use_write_multiple: true     
-    lambda: "return+4600 x * 0.01;"
-    write_lambda: "return x * 10.0;"
+    lambda: "return (x * 0.1) + 46.0;"
+    write_lambda: "return (x - 46.0) * 10.0;"
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "Mains mode bat low voltage protection point"
@@ -52,13 +52,13 @@ number:
     register_type: holding
     value_type: U_WORD
     unit_of_measurement: "V"
-    min_value: 0
-    max_value: 100
+    min_value: 44
+    max_value: 58
     step: 0.1
     mode: box
     use_write_multiple: true     
-    lambda: "return+460 x * 0.1;"
-    write_lambda: "return x * 10.0;"       
+    lambda: "return (x * 0.1) + 46.0;"
+    write_lambda: "return (x - 46.0) * 10.0;"       
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "Max Charging Current"
