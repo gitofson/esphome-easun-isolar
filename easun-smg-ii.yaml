@@ -21,18 +21,46 @@ modbus_controller:
 number:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "Low DC cut-off voltage or Soc"
-    address: 0x027f
+    name: "Low DC cut-off SOC"
+    address: 0x0287
     register_type: holding
     value_type: U_WORD
-    unit_of_measurement: "V%"
+    unit_of_measurement: "%"
     min_value: 0
-    max_value: 160
+    max_value: 100
     step: 0.1
     mode: box
     use_write_multiple: true     
     lambda: "return x * 0.1;"
     write_lambda: "return x * 10.0;"
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "Off-grid mode bat low voltage protection point"
+    address: 0x0286
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    min_value: 0
+    max_value: 100
+    step: 0.1
+    mode: box
+    use_write_multiple: true     
+    lambda: "return x * 0.1;"
+    write_lambda: "return x * 10.0;"
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "Mains mode bat low voltage protection point"
+    address: 0x0284
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    min_value: 0
+    max_value: 100
+    step: 0.1
+    mode: box
+    use_write_multiple: true     
+    lambda: "return x * 0.1;"
+    write_lambda: "return x * 10.0;"       
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "Max Charging Current"
