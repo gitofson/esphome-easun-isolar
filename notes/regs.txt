@@ -1,0 +1,30 @@
+3proc, Low DC Protection in AC Mode (set 5):
+[10:03:55.386][D][uart_debug:113]: <<< 01:10:02:87:00:01:02:00:05:5B:E4
+50.4 Off-grid mode battery low voltage protection point
+[10:11:25.972][D][uart_debug:113]: <<< 01:10:02:86:00:01:02:01:F7:DA:20
+50.6 Mains mode battery low voltage protection point
+[10:13:16.881][D][uart_debug:113]: <<< 01:10:02:84:00:01:02:01:FA:1A:07
+0.0  Mains mode battery discharge recovery point
+---
+3p  Battery Low Cut Off SOC (set 4p)
+[10:17:59.652][D][uart_debug:113]: <<< 01:10:02:8A:00:01:02:00:04:9B:39
+60p Low DC Recovery SOC In AC Mode (set 61p)
+[10:20:51.221][D][uart_debug:113]: <<< 01:10:02:88:00:01:02:00:3D:5A:C9
+Battery Overvoltage Protection Point (set 57)
+[10:23:14.006][D][uart_debug:113]: <<< 01:10:02:77:00:01:02:02:3A:0E:64
+Bttery type (set USER)
+[10:24:48.050][D][uart_debug:113]: <<< 01:10:02:76:00:01:02:00:02:0F:07
+            (set Li4) 
+[10:26:21.260][D][uart_debug:113]: <<< 01:10:02:76:00:01:02:00:06:0E:C4
+Floating Charge Voltage (set 54.1)
+[10:28:03.721][D][uart_debug:113]: <<< 01:10:02:7E:00:01:02:02:1D:4E:E7
+Maximum Charging Voltage (set 56.2)
+[10:29:40.363][D][uart_debug:113]: <<< 01:10:02:7D:00:01:02:02:32:0F:08
+
+Output Voltage (set 240V):
+[10:32:49.070][D][uart_debug:113]: <<< 01:10:02:5E:00:01:02:09:60:8E:96
+
+        Input Mode (set apl): APL UPS GNT
+[10:35:09.266][D][uart_debug:113]: <<< 01:10:02:A5:00:01:02:00:00:9D:65
+           (set UPS):
+[10:36:10.108][D][uart_debug:113]: <<< 01:10:02:A5:00:01:02:00:01:5C:A5
