@@ -738,14 +738,15 @@ sensor:
   #  accuracy_decimals: 2
 text_sensor:
   - platform: template
-    name: "Inverter Date and Time"
-    icon: "mdi:calendar-clock"
-    update_interval: 5s
+    name: "Inverter Real Time"
+    icon: "mdi:clock"
+    update_interval: 2s
     lambda: |-
-      sprintf(str, "%02d.%02d.20%02d %02d:%02d:%02d", 
-              (int)id(inv_day).state, (int)id(inv_month).state, (int)id(inv_year).state,
-              (int)id(inv_hour).state, (int)id(inv_min).state, (int)id(inv_sec).state);
-      return {str};
+      char str[30];
+      sprintf(str, "%02.0f.%02.0f.20%02.0f %02.0f:%02.0f:%02.0f", 
+        id(inv_day).state, id(inv_month).state, id(inv_year).state,
+        id(inv_hour).state, id(inv_min).state, id(inv_sec).state);
+      return {(std::string)str};
 button:
   - platform: template
     name: "Sync Inverter Time with HA"
