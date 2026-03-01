@@ -121,7 +121,15 @@ number:
     lambda: "return x * 0.1;"
     # Přepočet: HA (10.0) -> Střídač (100)
     write_lambda: "return x * 10.0;"  
-sensor:    
+sensor:
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "DEBUG SECONDS"
+    address: 0xB006  # Zkus tuto adresu
+    register_type: holding
+    value_type: U_WORD
+    update_interval: 1s
+    
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "Max Utility Charging Current"
@@ -704,7 +712,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_year
-    address: 0x002D  # ROK
+    address: 0xB001  # ROK
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -712,7 +720,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_month
-    address: 0x002E  # MĚSÍC
+    address: 0xB002  # MĚSÍC
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -720,7 +728,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_day
-    address: 0x002F  # DEN
+    address: 0xB003  # DEN
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -728,7 +736,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_hour
-    address: 0x0030  # HODINA
+    address: 0xB004  # HODINA
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -736,7 +744,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_min
-    address: 0x0031  # MINUTA
+    address: 0xB005  # MINUTA
     register_type: holding
     value_type: U_WORD
     internal: true
@@ -744,7 +752,7 @@ sensor:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     id: inv_sec
-    address: 0x0032  # SEKUNDA
+    address: 0xB006  # SEKUNDA
     register_type: holding
     value_type: U_WORD
     internal: true
