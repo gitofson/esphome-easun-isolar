@@ -762,15 +762,11 @@ button:
     entity_category: "config"
     on_press:
       lambda: |-
-        // Přidáme výpis v HEX formátu do logu, abychom viděli BCD
-        ESP_LOGD("modbus_debug", "HEX Year: %04X, Month: %04X, Day: %04X", 
-                 (int)id(inv_year).state, (int)id(inv_month).state, (int)id(inv_day).state);
-        
-        char str[30];
-        sprintf(str, "%02d.%02d.20%02d %02d:%02d:%02d", 
-          (int)id(inv_day).state, (int)id(inv_month).state, (int)id(inv_year).state,
-          (int)id(inv_hour).state, (int)id(inv_min).state, (int)id(inv_sec).state);
-        return {str};
+        // Zkusíme zapsat jen sekundy na 0x02BD
+        uint16_t test_sec = 15; 
+        auto req = esphome::modbus_controller::ModbusCommandItem::create_write_single_command(
+          id(easun_inv), 0x02BD, test_sec);
+        id(easun_inv).queue_command(req);
   - platform: template
     name: "Sync Test"
     icon: "mdi:time-sync"
