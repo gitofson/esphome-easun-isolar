@@ -648,17 +648,17 @@ sensor:
   #  accuracy_decimals: 2
   - platform: modbus_controller
     id: inv_year
-    address: 0x02B5  # Zkus 2B5 místo 2B8
+    address: 0x0113
     register_type: holding
     internal: true
   - platform: modbus_controller
     id: inv_month
-    address: 0x02B6
+    address: 0x0114
     register_type: holding
     internal: true
   - platform: modbus_controller
     id: inv_day
-    address: 0x02B7
+    address: 0x0115
     register_type: holding
     internal: true
 
@@ -727,18 +727,26 @@ text_sensor:
       return {(std::string)str};
 button:
   - platform: template
-    name: "Sync BCD Seconds"
+    name: "Sync Inverter Time (H:M:S)"
+    icon: "mdi:clock-fast"
     on_press:
       lambda: |-
         auto cal = id(sntp_time).now();
         if (cal.is_valid()) {
-          // Převod na BCD: 18 -> (1 << 4) | 8 = 0x18
-          uint16_t bcd_sec = ((cal.second / 10) << 4) | (cal.second % 10);
+          // Vytvoříme vektor pro 3 registry času
+          std::vector<uint16_t> data;
+          data.push_back((uint16_t)cal.hour);   // 0x02BB
+          data.push_back((uint16_t)cal.minute); // 0x02BC
+          data.push_back((uint16_t)cal.second); // 0x02BD
+
+          // Zápis 3 registrů počínaje adresou 0x02BB
+          auto req = esphome::modbus_controller::ModbusCommandItem::create_write_multiple_command(
+            id(easun_inv), 0x02BB, data.size(), data);
+          id(easun_inv).queue_command(req);
           
-          id(easun_inv).queue_command(esphome::modbus_controller::ModbusCommandItem::create_write_single_command(
-            id(easun_inv), 0x02BD, bcd_sec));
-          
-          ESP_LOGD("sync", "Odesílám vteřiny v BCD: %02X", bcd_sec);
+          ESP_LOGD("sync", "Odeslán hromadný zápis času: %02d:%02d:%02d", cal.hour, cal.minute, cal.second);
+        } else {
+          ESP_LOGW("sync", "Sync selhal - NTP čas není validní!");
         }
   - platform: template
     name: "Sync Test"
