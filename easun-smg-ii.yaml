@@ -146,18 +146,7 @@ sensor:
   - platform: modbus_controller
     id: test_118
     address: 0x0118 # Tady jsi měl SOC (32%)
-    register_type: holding
-    
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "Max Utility Charging Current"
-    address: 0x0281  # Zkus tento registr, bývá hned vedle
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "A"
-    accuracy_decimals: 1
-    filters:
-      - multiply: 0.1  
+    register_type: holding 
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "ISolar Battery Voltage"
@@ -179,14 +168,6 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x0064"
-    address: 0x0064
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "NA"
-    accuracy_decimals: 2
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "0x0065"
@@ -320,11 +301,11 @@ sensor:
     accuracy_decimals: 0
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "0x0119"
+    name: "battery_temperature"
     address: 0x0119
     register_type: holding
     value_type: U_WORD
-    unit_of_measurement: "NA"
+    unit_of_measurement: "˚C"
     accuracy_decimals: 2
   - platform: modbus_controller
     modbus_controller_id: easun_inv
@@ -352,15 +333,15 @@ sensor:
     accuracy_decimals: 2
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "0x0131"
+    name: "battery_soc_int"
     address: 0x0131
     register_type: holding
     value_type: U_WORD
-    unit_of_measurement: "NA"
+    unit_of_measurement: "%"
     accuracy_decimals: 2
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "0x0152 (U utility in?)"
+    name: "grid_voltage"
     address: 0x0152
     register_type: holding
     value_type: U_WORD
@@ -378,7 +359,7 @@ sensor:
     accuracy_decimals: 2
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "grid_voltage"
+    name: "output_voltage"
     address: 0x0156
     register_type: holding
     value_type: U_WORD
@@ -414,12 +395,14 @@ sensor:
       - multiply: 0.1
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "0x015B (solar i, p?)"
+    name: "output_current"
     address: 0x015B
     register_type: holding
     value_type: U_WORD
-    unit_of_measurement: "NA"
+    unit_of_measurement: "A"
     accuracy_decimals: 2
+    filters:
+      - multiply: 0.1    
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "output_power"
@@ -518,38 +501,6 @@ sensor:
     accuracy_decimals: 2
     filters:
       - multiply: 0.01    
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x0286"
-    address: 0x0286
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "NA"
-    accuracy_decimals: 2
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x0287"
-    address: 0x0287
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "NA"
-    accuracy_decimals: 2
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x0288"
-    address: 0x0288
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "NA"
-    accuracy_decimals: 2
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x028A"
-    address: 0x028A
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "NA"
-    accuracy_decimals: 2
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "0x028B"
@@ -714,12 +665,14 @@ sensor:
     
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "0x02BE"
+    name: "generated_today"
     address: 0x02BE
     register_type: holding
     value_type: U_WORD
-    unit_of_measurement: "NA"
+    unit_of_measurement: "kWh"
     accuracy_decimals: 2
+    filters:
+      - multiply: 0.1
     #konst 4
   #- platform: modbus_controller
   #  modbus_controller_id: easun_inv
@@ -729,14 +682,6 @@ sensor:
   #  value_type: U_WORD
   #  unit_of_measurement: "NA"
   #  accuracy_decimals: 2
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x02C0"
-    address: 0x02C0
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "NA"
-    accuracy_decimals: 2
     #konst 0  0x02C1,0x02C2,0x02C3
     #konst 90
   #- platform: modbus_controller
