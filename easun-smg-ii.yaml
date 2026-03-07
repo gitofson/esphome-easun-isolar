@@ -120,7 +120,23 @@ number:
     # Přepočet: Střídač (100) -> HA (10.0)
     lambda: "return x * 0.1;"
     # Přepočet: HA (10.0) -> Střídač (100)
-    write_lambda: "return x * 10.0;"  
+    write_lambda: "return x * 10.0;"
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "Floating charging voltage"
+    address: 0x028C 
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    min_value: 48
+    max_value: 56
+    step: 0.1
+    mode: box
+    use_write_multiple: true 
+    # Přepočet: Střídač (100) -> HA (10.0)
+    lambda: "return x * 0.1;"
+    # Přepočet: HA (10.0) -> Střídač (100)
+    write_lambda: "return x * 10.0;"    
 sensor:
   - platform: modbus_controller
     id: test_113
@@ -509,14 +525,14 @@ sensor:
     value_type: U_WORD
     unit_of_measurement: "NA"
     accuracy_decimals: 2
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "0x028C"
-    address: 0x028C
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "NA"
-    accuracy_decimals: 2
+  #- platform: modbus_controller
+  #  modbus_controller_id: easun_inv
+  #  name: "0x028C"
+  #  address: 0x028C
+  #  register_type: holding
+  #  value_type: U_WORD
+  #  unit_of_measurement: "NA"
+  #  accuracy_decimals: 2
   - platform: modbus_controller
     modbus_controller_id: easun_inv
     name: "0x028D"
@@ -672,7 +688,7 @@ sensor:
     unit_of_measurement: "kWh"
     accuracy_decimals: 2
     filters:
-      - multiply: 0.1
+      - multiply: 0.01
     #konst 4
   #- platform: modbus_controller
   #  modbus_controller_id: easun_inv
