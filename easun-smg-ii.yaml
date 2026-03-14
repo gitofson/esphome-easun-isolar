@@ -26,20 +26,52 @@ modbus_controller:
 number:
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "Low DC cut-off SOC"
-    address: 0x0287
+    name: "Max Charging Current"
+    address: 0x0280
     register_type: holding
     value_type: U_WORD
-    unit_of_measurement: "%"
+    unit_of_measurement: "A"
     min_value: 0
-    max_value: 100
-    step: 1
+    max_value: 160
+    step: 0.1
     mode: box
     use_write_multiple: true 
+    # Přepočet: Střídač (100) -> HA (10.0)
+    lambda: "return x * 0.1;"
+    # Přepočet: HA (10.0) -> Střídač (100)
+    write_lambda: "return x * 10.0;"    
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "Battery Low Cut Off SOC"
-    address: 0x028A
+    name: "Mains mode bat low voltage protection point"
+    address: 0x0284
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    min_value: 44
+    max_value: 58
+    step: 0.1
+    mode: box
+    use_write_multiple: true     
+    lambda: "return (x * 0.01) + 46.0;"
+    write_lambda: "return (x - 46.0) * 100.0;"
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "Off-grid mode bat low voltage protection point"
+    address: 0x0286
+    register_type: holding
+    value_type: U_WORD
+    unit_of_measurement: "V"
+    min_value: 44
+    max_value: 58
+    step: 0.1
+    mode: box
+    use_write_multiple: true     
+    lambda: "return (x * 0.01) + 46.0;"
+    write_lambda: "return (x - 46.0) * 100.0;"    
+  - platform: modbus_controller
+    modbus_controller_id: easun_inv
+    name: "Setting Soc point back to utility"
+    address: 0x0287
     register_type: holding
     value_type: U_WORD
     unit_of_measurement: "%"
@@ -59,51 +91,20 @@ number:
     max_value: 100
     step: 1
     mode: box
-    use_write_multiple: true      
+    use_write_multiple: true   
   - platform: modbus_controller
     modbus_controller_id: easun_inv
-    name: "Off-grid mode bat low voltage protection point"
-    address: 0x0286
+    name: "Battery Low Cut Off SOC"
+    address: 0x028A
     register_type: holding
     value_type: U_WORD
-    unit_of_measurement: "V"
-    min_value: 44
-    max_value: 58
-    step: 0.1
-    mode: box
-    use_write_multiple: true     
-    lambda: "return (x * 0.01) + 46.0;"
-    write_lambda: "return (x - 46.0) * 100.0;"
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "Mains mode bat low voltage protection point"
-    address: 0x0284
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "V"
-    min_value: 44
-    max_value: 58
-    step: 0.1
-    mode: box
-    use_write_multiple: true     
-    lambda: "return (x * 0.01) + 46.0;"
-    write_lambda: "return (x - 46.0) * 100.0;"       
-  - platform: modbus_controller
-    modbus_controller_id: easun_inv
-    name: "Max Charging Current"
-    address: 0x0280
-    register_type: holding
-    value_type: U_WORD
-    unit_of_measurement: "A"
+    unit_of_measurement: "%"
     min_value: 0
-    max_value: 160
-    step: 0.1
+    max_value: 100
+    step: 1
     mode: box
-    use_write_multiple: true 
-    # Přepočet: Střídač (100) -> HA (10.0)
-    lambda: "return x * 0.1;"
-    # Přepočet: HA (10.0) -> Střídač (100)
-    write_lambda: "return x * 10.0;"
+    use_write_multiple: true     
+
 
   - platform: modbus_controller
     modbus_controller_id: easun_inv
