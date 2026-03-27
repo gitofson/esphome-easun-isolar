@@ -705,7 +705,7 @@ sensor:
     name: "generated_today"
     address: 0x02BE
     register_type: holding
-    device_class: power
+    device_class: energy
     state_class: total_increasing
     value_type: U_WORD
     unit_of_measurement: "kWh"
