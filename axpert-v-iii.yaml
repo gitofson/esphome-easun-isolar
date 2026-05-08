@@ -32,6 +32,33 @@ binary_sensor:
     name: "Stav zátěže"
     id: load_on
 
+select:
+  - platform: template
+    name: "Priorita výstupu (Output Priority)"
+    id: output_priority
+    options:
+      - "Utility First (USB)"
+      - "Solar First (SUB)"
+      - "SBU Priority"
+    initial_option: "SBU Priority"
+    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            // Příkazy: POP00 (USB), POP01 (SUB), POP02 (SBU)
+            // CRC jsou vypočtena pro formát: Příkaz + CRC + \r
+            if (item == "Utility First (USB)") {
+              uint8_t cmd[] = {'P', 'O', 'P', '0', '0', 0x42, 0xC5, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            } else if (item == "Solar First (SUB)") {
+              uint8_t cmd[] = {'P', 'O', 'P', '0', '1', 0xD2, 0xE4, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            } else if (item == "SBU Priority") {
+              uint8_t cmd[] = {'P', 'O', 'P', '0', '2', 0x12, 0x81, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            }
+            ESP_LOGD("axpert", "Zmenena priorita na: %s", item.c_str());
+            
 interval:
   - interval: 1s
     then:
