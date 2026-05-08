@@ -68,33 +68,23 @@ interval:
             if (id(uart_bus).read_byte(&byte)) {
               char c = (char)byte;
               if (c == '\r') {
-                ESP_LOGI("monitor", "DELKA: %d | DATA: %s", buffer.length(), buffer.c_str());
-                float v_batt, p_load, v_pv;
-                char stat[9];
-                if (buffer.find("(") == 0 && buffer.length() > 50) {
-                  // Rozlišení podle obsahu: QPIGS má víc mezer, QPIRI má jiné parametry
-                  // Pro VM III je v QPIRI priorita výstupu na konci jako jedno číslo
-                  
-                  int out_prio;
-                  // Hledáme prioritu v QPIRI - je to 20. hodnota
-                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %d", &out_prio) == 1) {
-                    if (out_prio == 0) id(output_priority).publish_state("Utility First (USB)");
-                    else if (out_prio == 1) id(output_priority).publish_state("Solar First (SUB)");
-                    else if (out_prio == 2) id(output_priority).publish_state("SBU Priority");
-                  }
-                  // VM III Mapa: (AC_In F_In AC_Out F_Out VA_Load W_Load %_Load Bus_V V_Batt I_Char Cap T_Heat I_PV V_PV ... Status
-                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %f %*f %*f %f %*f %*f %*f %*f %f %*f %*f %8s", 
-                      &p_load, &v_batt, &v_pv, stat) >= 3) {
+                // 1. QPIGS - Provozní data (Délka cca 109)
+                if (buffer.length() > 100) {
+                  float v_batt, p_load, v_pv;
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %f %*f %*f %f %*f %*f %*f %*f %f", &p_load, &v_batt, &v_pv) >= 2) {
                     id(batt_voltage).publish_state(v_batt);
                     id(load_power).publish_state(p_load);
                     id(pv_voltage).publish_state(v_pv);
-                    
-                    // Parsování statusu (8 bitů): 
-                    // bit 3 (index 3) = Nabíjení ze sítě, bit 4 (index 4) = Stav zátěže
-                    if (strlen(stat) >= 8) {
-                      id(charging_from_grid).publish_state(stat[3] == '1');
-                      id(load_on).publish_state(stat[4] == '1');
-                    }
+                  }
+                } 
+                // 2. QPIRI - Nastavení (Délka cca 97)
+                else if (buffer.length() > 90) {
+                  int out_prio;
+                  // Priorita je u tebe 17. parametr (číslo 0, 1 nebo 2)
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %d", &out_prio) == 1) {
+                    if (out_prio == 0) id(output_priority).publish_state("Utility First (USB)");
+                    else if (out_prio == 1) id(output_priority).publish_state("Solar First (SUB)");
+                    else if (out_prio == 2) id(output_priority).publish_state("SBU Priority");
                   }
                 }
                 buffer.clear();
