@@ -70,18 +70,30 @@ interval:
               if (c == '\r') {
                 float v_batt, p_load, v_pv;
                 char stat[9];
-                // VM III Mapa: (AC_In F_In AC_Out F_Out VA_Load W_Load %_Load Bus_V V_Batt I_Char Cap T_Heat I_PV V_PV ... Status
-                if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %f %*f %*f %f %*f %*f %*f %*f %f %*f %*f %8s", 
-                    &p_load, &v_batt, &v_pv, stat) >= 3) {
-                  id(batt_voltage).publish_state(v_batt);
-                  id(load_power).publish_state(p_load);
-                  id(pv_voltage).publish_state(v_pv);
+                if (buffer.find("(") == 0 && buffer.length() > 50) {
+                  // Rozlišení podle obsahu: QPIGS má víc mezer, QPIRI má jiné parametry
+                  // Pro VM III je v QPIRI priorita výstupu na konci jako jedno číslo
                   
-                  // Parsování statusu (8 bitů): 
-                  // bit 3 (index 3) = Nabíjení ze sítě, bit 4 (index 4) = Stav zátěže
-                  if (strlen(stat) >= 8) {
-                    id(charging_from_grid).publish_state(stat[3] == '1');
-                    id(load_on).publish_state(stat[4] == '1');
+                  int out_prio;
+                  // Hledáme prioritu v QPIRI - je to 20. hodnota
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %d", &out_prio) == 1) {
+                    if (out_prio == 0) id(output_priority).publish_state("Utility First (USB)");
+                    else if (out_prio == 1) id(output_priority).publish_state("Solar First (SUB)");
+                    else if (out_prio == 2) id(output_priority).publish_state("SBU Priority");
+                  }
+                  // VM III Mapa: (AC_In F_In AC_Out F_Out VA_Load W_Load %_Load Bus_V V_Batt I_Char Cap T_Heat I_PV V_PV ... Status
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %f %*f %*f %f %*f %*f %*f %*f %f %*f %*f %8s", 
+                      &p_load, &v_batt, &v_pv, stat) >= 3) {
+                    id(batt_voltage).publish_state(v_batt);
+                    id(load_power).publish_state(p_load);
+                    id(pv_voltage).publish_state(v_pv);
+                    
+                    // Parsování statusu (8 bitů): 
+                    // bit 3 (index 3) = Nabíjení ze sítě, bit 4 (index 4) = Stav zátěže
+                    if (strlen(stat) >= 8) {
+                      id(charging_from_grid).publish_state(stat[3] == '1');
+                      id(load_on).publish_state(stat[4] == '1');
+                    }
                   }
                 }
                 buffer.clear();
@@ -94,5 +106,14 @@ interval:
   - interval: 10s
     then:
       - lambda: |-
-          uint8_t qpigs[] = {'Q', 'P', 'I', 'G', 'S', 0xB7, 0xA9, 0x0D};
-          id(uart_bus).write_array(qpigs, sizeof(qpigs));
+          static bool toggle = false;
+          if (toggle) {
+            // Dotaz na data
+            uint8_t qpigs[] = {'Q', 'P', 'I', 'G', 'S', 0xB7, 0xA9, 0x0D};
+            id(uart_bus).write_array(qpigs, sizeof(qpigs));
+          } else {
+            // Dotaz na nastavení (priority)
+            uint8_t qpiri[] = {'Q', 'P', 'I', 'R', 'I', 0xF8, 0x54, 0x0D};
+            id(uart_bus).write_array(qpiri, sizeof(qpiri));
+          }
+          toggle = !toggle;
