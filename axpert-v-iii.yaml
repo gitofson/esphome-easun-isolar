@@ -41,7 +41,7 @@ select:
       - "Solar First (SUB)"
       - "SBU Priority"
     initial_option: "SBU Priority"
-    optimistic: true
+#    optimistic: true
     set_action:
       then:
         - lambda: |-
