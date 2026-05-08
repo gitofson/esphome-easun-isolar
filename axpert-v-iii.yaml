@@ -11,21 +11,26 @@ sensor:
     unit_of_measurement: "V"
     id: batt_voltage
     accuracy_decimals: 2
-    icon: "mdi:battery"
     
   - platform: template
     name: "Výkon zátěže"
     unit_of_measurement: "W"
     id: load_power
     accuracy_decimals: 0
-    icon: "mdi:speedometer"
 
   - platform: template
     name: "Napětí panelů"
     unit_of_measurement: "V"
     id: pv_voltage
     accuracy_decimals: 1
-    icon: "mdi:solar-panel"
+
+binary_sensor:
+  - platform: template
+    name: "Nabíjení ze sítě"
+    id: charging_from_grid
+  - platform: template
+    name: "Stav zátěže"
+    id: load_on
 
 interval:
   - interval: 1s
@@ -38,12 +43,20 @@ interval:
               char c = (char)byte;
               if (c == '\r') {
                 float v_batt, p_load, v_pv;
-                // VM III Mapa: (AC_In F_In AC_Out F_Out VA_Load W_Load %_Load Bus_V V_Batt I_Char Cap T_Heat I_PV V_PV
-                if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %f %*f %*f %f %*f %*f %*f %*f %f", 
-                    &p_load, &v_batt, &v_pv) >= 2) {
+                char stat[9];
+                // VM III Mapa: (AC_In F_In AC_Out F_Out VA_Load W_Load %_Load Bus_V V_Batt I_Char Cap T_Heat I_PV V_PV ... Status
+                if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %f %*f %*f %f %*f %*f %*f %*f %f %*f %*f %8s", 
+                    &p_load, &v_batt, &v_pv, stat) >= 3) {
                   id(batt_voltage).publish_state(v_batt);
                   id(load_power).publish_state(p_load);
                   id(pv_voltage).publish_state(v_pv);
+                  
+                  // Parsování statusu (8 bitů): 
+                  // bit 3 (index 3) = Nabíjení ze sítě, bit 4 (index 4) = Stav zátěže
+                  if (strlen(stat) >= 8) {
+                    id(charging_from_grid).publish_state(stat[3] == '1');
+                    id(load_on).publish_state(stat[4] == '1');
+                  }
                 }
                 buffer.clear();
               } else if (c != '\n') {
@@ -55,6 +68,5 @@ interval:
   - interval: 10s
     then:
       - lambda: |-
-          // QPIGS + CRC (0xB7 0xA9) + CR
           uint8_t qpigs[] = {'Q', 'P', 'I', 'G', 'S', 0xB7, 0xA9, 0x0D};
           id(uart_bus).write_array(qpigs, sizeof(qpigs));
