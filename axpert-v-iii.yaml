@@ -68,6 +68,7 @@ interval:
             if (id(uart_bus).read_byte(&byte)) {
               char c = (char)byte;
               if (c == '\r') {
+                ESP_LOGI("monitor", "DELKA: %d | DATA: %s", buffer.length(), buffer.c_str());
                 float v_batt, p_load, v_pv;
                 char stat[9];
                 if (buffer.find("(") == 0 && buffer.length() > 50) {
