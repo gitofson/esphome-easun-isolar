@@ -25,22 +25,22 @@ sensor:
     accuracy_decimals: 1
     
   - platform: template
-    name: "bulk_volt"
-    unit_of_measurement: "V"
-    id: bulk_volt
-    accuracy_decimals: 1
-    
-  - platform: template
-    name: "float_volt"
-    unit_of_measurement: "V"
-    id: float_volt
-    accuracy_decimals: 1
-    
-  - platform: template
-    name: "p13"
-    unit_of_measurement: "V"
+    name: "Návrat k baterii (P13)"
     id: back_to_full_volt
-    accuracy_decimals: 1        
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    
+  - platform: template
+    name: "Bulk napětí (P26)"
+    id: bulk_volt
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    
+  - platform: template
+    name: "Float napětí (P27)"
+    id: float_volt
+    unit_of_measurement: "V"
+    accuracy_decimals: 1     
 
 binary_sensor:
   - platform: template
