@@ -81,6 +81,11 @@ sensor:
     unit_of_measurement: "A"
     icon: "mdi:battery-arrow-up"
 
+  - platform: template
+    name: "Výkon panelů"
+    id: pv_power
+    unit_of_measurement: "W"
+
 binary_sensor:
   - platform: template
     name: "Nabíjení ze sítě"
