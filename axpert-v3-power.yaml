@@ -66,7 +66,20 @@ sensor:
     name: "Float napětí (P27)"
     id: float_volt
     unit_of_measurement: "V"
-    accuracy_decimals: 1     
+    accuracy_decimals: 1
+
+  - platform: template
+    name: "Vybíjecí proud baterie"
+    id: batt_discharge_current
+    unit_of_measurement: "A"
+    accuracy_decimals: 0
+    icon: "mdi:battery-arrow-down"
+
+  - platform: template
+    name: "Nabíjecí proud baterie"
+    id: batt_charge_current
+    unit_of_measurement: "A"
+    icon: "mdi:battery-arrow-up"
 
 binary_sensor:
   - platform: template
@@ -251,10 +264,16 @@ interval:
                 // 1. QPIGS - Provozní data (Délka cca 109)
                 if (buffer.length() > 100) {
                   float v_batt, p_load, v_pv;
-                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %f %*f %*f %f %*f %*f %*f %*f %f", &p_load, &v_batt, &v_pv) >= 2) {
-                    id(batt_voltage).publish_state(v_batt);
-                    id(load_power).publish_state(p_load);
-                    id(pv_voltage).publish_state(v_pv);
+                  int i_charge, i_discharge, p_pv;
+                  // Mapa: ( AC_V AC_F Out_V Out_F VA W % Bus V_Batt(9) I_Ch(10) Cap Temp I_PV V_PV(14) ... I_Disch(16) ... P_PV(21)
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %f %*f %*f %f %d %*d %*d %*f %f %*f %d %*s %*s %*s %*s %d", 
+                      &p_load, &v_batt, &i_charge, &v_pv, &i_discharge, &p_pv) >= 4) {
+                      id(batt_voltage).publish_state(v_batt);
+                      id(load_power).publish_state(p_load);
+                      id(pv_voltage).publish_state(v_pv);
+                      id(batt_charge_current).publish_state(i_charge);
+                      id(batt_discharge_current).publish_state(i_discharge);
+                      id(pv_power).publish_state(p_pv); // Tvých 2185 W
                   }
                 } 
                 // 2. QPIRI - Nastavení (Délka cca 97)
