@@ -107,8 +107,8 @@ interval:
                   int out_prio, charg_prio, p11;
                   float p12, p13;
                   // Parsování: 9.(p12), 10.(p13), 16.(charg_prio), 17.(out_prio)
-                    if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %*f %*f %d %d %d", 
-             &p12, &p13, &p11, &charg_prio, &out_prio) >= 3) {
+                    if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %d %d %*d %*d %d", 
+    &p12, &p13, &p11, &charg_prio, &out_prio) >= 3) {
                       // Get pro Program 11 (Max Utility Charge Current)
                       id(utility_charge_current).publish_state(p11);
                       // Aktualizace číselných hodnot (posuvníků)
