@@ -274,6 +274,10 @@ interval:
                   if (p13 > 0) id(back_to_full_volt).publish_state(p13);
                   if (p26 > 0) id(bulk_volt).publish_state(p26);
                   if (p27 > 0) id(float_volt).publish_state(p27);
+                  
+                  // Aktualizace posuvníků (Number prvků), aby v HA ukazovaly realitu
+                  id(bulk_volt_set).publish_state(p26);   // P26 posuvník
+                  id(float_volt_set).publish_state(p27);  // P27 posuvník
                 
                   // Priority
                   if (charg_prio == 1) id(charger_priority).publish_state("Solar First (CSO)");
