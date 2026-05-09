@@ -4,27 +4,6 @@ uart:
   rx_pin: ${uart_rx_pin}
   baud_rate: 2400
   rx_buffer_size: 512
-  
-# Definice společného C++ kódu pro všechny lambdy
-common:
-  calc_crc_func: &calc_crc_func |-
-    auto calc_crc = [](const uint8_t *data, uint16_t len) -> uint16_t {
-      uint16_t crc = 0;
-      static const uint16_t table[] = {
-        0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
-        0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef
-      };
-      for (uint16_t i = 0; i < len; i++) {
-        uint8_t d = data[i];
-        uint8_t da = ((uint8_t)(crc >> 8)) >> 4;
-        crc <<= 4;
-        crc ^= table[da ^ (d >> 4)];
-        da = ((uint8_t)(crc >> 8)) >> 4;
-        crc <<= 4;
-        crc ^= table[da ^ (d & 0x0f)];
-      }
-      return crc;
-    };
     
 sensor:
   - platform: template
@@ -135,7 +114,7 @@ number:
     set_action:
       then:
         - lambda: |-
-            <<: *calc_crc_func
+            ${calc_crc_cpp}
             char cmd[20];
             sprintf(cmd, "PCVV%.1f", x); // Příkaz pro Bulk
             std::string s = cmd;
@@ -154,7 +133,7 @@ number:
     set_action:
       then:
         - lambda: |-
-            <<: *calc_crc_func
+            ${calc_crc_cpp}
             char cmd[20];
             sprintf(cmd, "PBFT%.1f", x); // Příkaz pro Float
             std::string s = cmd;
@@ -173,7 +152,7 @@ number:
     set_action:
       then:
         - lambda: |-
-            <<: *calc_crc_func
+            ${calc_crc_cpp}
             char cmd[20];
             // Pro 50.0V to vytvoří přesně "PSDV500"
             sprintf(cmd, "PSDV%.0f", x); 
@@ -207,7 +186,7 @@ number:
     set_action:
       then:
         - lambda: |-
-            <<: *calc_crc_func
+            ${calc_crc_cpp}
             char cmd[20];
             // VM III standard: MUCHGC + 3 číslice (002, 010, 060)
             sprintf(cmd, "MUCHGC%03.0f", x); 
