@@ -1,0 +1,183 @@
+uart:
+  id: uart_bus
+  tx_pin: ${uart_tx_pin}
+  rx_pin: ${uart_rx_pin}
+  baud_rate: 2400
+  rx_buffer_size: 512
+
+sensor:
+  - platform: template
+    name: "Zkusebni Senzor"
+    id: test_sensor
+  
+  - platform: template
+    name: "Napětí baterie"
+    unit_of_measurement: "V"
+    id: batt_voltage
+    accuracy_decimals: 2
+    
+  - platform: template
+    name: "Výkon zátěže"
+    unit_of_measurement: "W"
+    id: load_power
+    accuracy_decimals: 0
+
+  - platform: template
+    name: "Napětí panelů"
+    unit_of_measurement: "V"
+    id: pv_voltage
+    accuracy_decimals: 1
+    
+  - platform: template
+    name: "Návrat k baterii (P13)"
+    id: back_to_full_volt
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    
+  - platform: template
+    name: "Bulk napětí (P26)"
+    id: bulk_volt
+    unit_of_measurement: "V"
+    accuracy_decimals: 1
+    
+  - platform: template
+    name: "Float napětí (P27)"
+    id: float_volt
+    unit_of_measurement: "V"
+    accuracy_decimals: 1     
+
+binary_sensor:
+  - platform: template
+    name: "Nabíjení ze sítě"
+    id: charging_from_grid
+  - platform: template
+    name: "Stav zátěže"
+    id: load_on
+
+select:
+  - platform: template
+    name: "Priorita výstupu (Output Priority)"
+    id: output_priority
+    options:
+      - "Utility First (USB)"
+      - "Solar First (SUB)"
+      - "SBU Priority"
+    initial_option: "SBU Priority"
+#    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            // V ESPHome 'select' šabloně je vybraný řetězec v proměnné 'x'
+            if (x == "Utility First (USB)") {
+              uint8_t cmd[] = {'P', 'O', 'P', '0', '0', 0x42, 0xC5, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            } else if (x == "Solar First (SUB)") {
+              uint8_t cmd[] = {'P', 'O', 'P', '0', '1', 0xD2, 0xE4, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            } else if (x == "SBU Priority") {
+              uint8_t cmd[] = {'P', 'O', 'P', '0', '2', 0x12, 0x81, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            }
+            ESP_LOGD("axpert", "Zmenena priorita na: %s", x.c_str());
+
+  - platform: template
+    name: "Priorita nabíjení (Charger Priority)"
+    id: charger_priority
+    options:
+      - "Only Solar (OSO)"
+      - "Solar and Utility (SNU)"
+      - "Solar First (CSO)"
+    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            // Kódy pro VM III: 01=CSO, 02=SNU, 03=OSO
+            if (x == "Solar First (CSO)") {
+              uint8_t cmd[] = {'P', 'C', 'P', '0', '1', 0xB3, 0xC8, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            } else if (x == "Solar and Utility (SNU)") {
+              uint8_t cmd[] = {'P', 'C', 'P', '0', '2', 0x73, 0xAB, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            } else if (x == "Only Solar (OSO)") {
+              uint8_t cmd[] = {'P', 'C', 'P', '0', '3', 0xE3, 0x8A, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            }
+            ESP_LOGD("axpert", "Zmenena priorita nabijeni na: %s", x.c_str());
+            
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          static std::string buffer;
+          uint8_t byte;
+          while (id(uart_bus).available() > 0) {
+            if (id(uart_bus).read_byte(&byte)) {
+              char c = (char)byte;
+              if (c == '\r') {
+                ESP_LOGI("monitor", "DELKA: %d | DATA: %s", buffer.length(), buffer.c_str());
+                // 1. QPIGS - Provozní data (Délka cca 109)
+                if (buffer.length() > 100) {
+                  float v_batt, p_load, v_pv;
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %f %*f %*f %f %*f %*f %*f %*f %f", &p_load, &v_batt, &v_pv) >= 2) {
+                    id(batt_voltage).publish_state(v_batt);
+                    id(load_power).publish_state(p_load);
+                    id(pv_voltage).publish_state(v_pv);
+                  }
+                } 
+                // 2. QPIRI - Nastavení (Délka cca 97)
+                else if (buffer.length() > 90) {
+                  int out_prio, charg_prio, p11, p02;
+                  float p12, p13, p26, p27;
+                  // Parsování: 9.(p12), 10.(p13), 16.(charg_prio), 17.(out_prio)
+                    // ( 1. 2. 3. 4. 5. 6. 7. 8. 9(P12) 10 11 12 13 14(P11) 15(P02)
+                  //if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %*f %*f %*f %*f %d %d", 
+                  //      &p12, &p11, &p02) >= 2) {
+                  // ( 1. 2. 3. 4. 5. 6. 7. 8. 9(P12) 10(P13) 11 12 13 14(P11) 15(P02)
+                  //if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %*f %d %d", 
+                  //    &p12, &p11, &p02) >= 2) {
+                  // 1. ( 2. 3. 4. 5. 6. 7. 8. 9(P12) 10 ... 13(P11) 14(P16) ... 17(P01) ... 23(P13)
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %f %*f %d %d %*d %*d %d %*d %*d %d %*d %*d %f", 
+                      &p12, &p26, &p27, &p11, &charg_prio, &out_prio, &p13) >= 3) {                  
+                  //  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %*f %f %f %*f %d %d %d %d",
+                  //      &p12, &p26, &p27, &p11, &p02, &charg_prio, &out_prio, &p13) >= 1) {
+    
+                      // Get pro Program 11 (Max Utility Charge Current)
+                      id(utility_charge_current).publish_state(p11);
+                      // Aktualizace číselných hodnot (posuvníků)
+                      id(back_to_grid_volt).publish_state(p12);
+                      id(back_to_full_volt).publish_state(p13);
+                      id(bulk_volt).publish_state(p26);
+                      id(float_volt).publish_state(p27);
+                
+                      // Aktualizace priority nabíjení
+                      if (charg_prio == 1) id(charger_priority).publish_state("Solar First (CSO)");
+                      else if (charg_prio == 2) id(charger_priority).publish_state("Solar and Utility (SNU)");
+                      else if (charg_prio == 3) id(charger_priority).publish_state("Only Solar (OSO)");
+                  
+                      // Aktualizace priority výstupu
+                      if (out_prio == 0) id(output_priority).publish_state("Utility First (USB)");
+                      else if (out_prio == 1) id(output_priority).publish_state("Solar First (SUB)");
+                      else if (out_prio == 2) id(output_priority).publish_state("SBU Priority");
+                  }
+                }
+                buffer.clear();
+              } else if (c != '\n') {
+                buffer += c;
+              }
+            }
+          }
+
+  - interval: 10s
+    then:
+      - lambda: |-
+          static bool toggle = false;
+          if (toggle) {
+            // Dotaz na data
+            uint8_t qpigs[] = {'Q', 'P', 'I', 'G', 'S', 0xB7, 0xA9, 0x0D};
+            id(uart_bus).write_array(qpigs, sizeof(qpigs));
+          } else {
+            // Dotaz na nastavení (priority)
+            uint8_t qpiri[] = {'Q', 'P', 'I', 'R', 'I', 0xF8, 0x54, 0x0D};
+            id(uart_bus).write_array(qpiri, sizeof(qpiri));
+          }
+          toggle = !toggle;
