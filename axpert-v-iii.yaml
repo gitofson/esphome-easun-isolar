@@ -57,6 +57,30 @@ select:
               id(uart_bus).write_array(cmd, sizeof(cmd));
             }
             ESP_LOGD("axpert", "Zmenena priorita na: %s", x.c_str());
+
+  - platform: template
+    name: "Priorita nabíjení (Charger Priority)"
+    id: charger_priority
+    options:
+      - "Only Solar (OSO)"
+      - "Solar and Utility (SNU)"
+      - "Solar First (CSO)"
+    optimistic: true
+    set_action:
+      then:
+        - lambda: |-
+            // Kódy pro VM III: 01=CSO, 02=SNU, 03=OSO
+            if (x == "Solar First (CSO)") {
+              uint8_t cmd[] = {'P', 'C', 'P', '0', '1', 0xB3, 0xC8, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            } else if (x == "Solar and Utility (SNU)") {
+              uint8_t cmd[] = {'P', 'C', 'P', '0', '2', 0x73, 0xAB, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            } else if (x == "Only Solar (OSO)") {
+              uint8_t cmd[] = {'P', 'C', 'P', '0', '3', 0xE3, 0x8A, 0x0D};
+              id(uart_bus).write_array(cmd, sizeof(cmd));
+            }
+            ESP_LOGD("axpert", "Zmenena priorita nabijeni na: %s", x.c_str());
             
 interval:
   - interval: 1s
