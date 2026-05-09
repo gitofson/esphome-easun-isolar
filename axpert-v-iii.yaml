@@ -103,12 +103,13 @@ interval:
                 } 
                 // 2. QPIRI - Nastavení (Délka cca 97)
                 else if (buffer.length() > 90) {
-                  int out_prio, charg_prio;
+                  int out_prio, charg_prio, p11;
                   float p12, p13;
                   // Parsování: 9.(p12), 10.(p13), 16.(charg_prio), 17.(out_prio)
-                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %*f %*f %*f %d %d", 
-                             &p12, &p13, &charg_prio, &out_prio) >= 2) {
-                      
+                    if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %*f %*f %d %d %d", 
+             &p12, &p13, &p11, &charg_prio, &out_prio) >= 3) {
+                      // Get pro Program 11 (Max Utility Charge Current)
+                      id(utility_charge_current).publish_state(p11);
                       // Aktualizace číselných hodnot (posuvníků)
                       id(back_to_grid_volt).publish_state(p12);
                       //id(back_to_full_volt).publish_state(p13);
