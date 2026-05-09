@@ -126,39 +126,35 @@ interval:
                 } 
                 // 2. QPIRI - Nastavení (Délka cca 97)
                 else if (buffer.length() > 90) {
-                  int out_prio, charg_prio, p11, p02;
-                  float p12, p13, p26, p27;
-                  // Parsování: 9.(p12), 10.(p13), 16.(charg_prio), 17.(out_prio)
-                    // ( 1. 2. 3. 4. 5. 6. 7. 8. 9(P12) 10 11 12 13 14(P11) 15(P02)
-                  //if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %*f %*f %*f %*f %d %d", 
-                  //      &p12, &p11, &p02) >= 2) {
-                  // ( 1. 2. 3. 4. 5. 6. 7. 8. 9(P12) 10(P13) 11 12 13 14(P11) 15(P02)
-                  //if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %*f %d %d", 
-                  //    &p12, &p11, &p02) >= 2) {
-                  // 1. ( 2. 3. 4. 5. 6. 7. 8. 9(P12) 10 ... 13(P11) 14(P16) ... 17(P01) ... 23(P13)
-                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %f %*f %d %d %*d %*d %d %*d %*d %d %*d %*d %f", 
-                      &p12, &p26, &p27, &p11, &charg_prio, &out_prio, &p13) >= 3) {                  
-                  //  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %*f %f %f %*f %d %d %d %d",
-                  //      &p12, &p26, &p27, &p11, &p02, &charg_prio, &out_prio, &p13) >= 1) {
-    
-                      // Get pro Program 11 (Max Utility Charge Current)
-                      id(utility_charge_current).publish_state(p11);
-                      // Aktualizace číselných hodnot (posuvníků)
-                      id(back_to_grid_volt).publish_state(p12);
-                      id(back_to_full_volt).publish_state(p13);
-                      id(bulk_volt).publish_state(p26);
-                      id(float_volt).publish_state(p27);
+                  int out_prio = -1, charg_prio = -1, p11 = -1;
+                  float p12 = 0, p13 = 0, p26 = 0, p27 = 0;
                 
-                      // Aktualizace priority nabíjení
-                      if (charg_prio == 1) id(charger_priority).publish_state("Solar First (CSO)");
-                      else if (charg_prio == 2) id(charger_priority).publish_state("Solar and Utility (SNU)");
-                      else if (charg_prio == 3) id(charger_priority).publish_state("Only Solar (OSO)");
-                  
-                      // Aktualizace priority výstupu
-                      if (out_prio == 0) id(output_priority).publish_state("Utility First (USB)");
-                      else if (out_prio == 1) id(output_priority).publish_state("Solar First (SUB)");
-                      else if (out_prio == 2) id(output_priority).publish_state("SBU Priority");
-                  }
+                  // Krok A: Vytáhneme napětí na začátku (9, 10, 11)
+                  // ( 1. 2. 3. 4. 5. 6. 7. 8. 9(P12) 10(P13_fake) 11(P26) 12(P27)
+                  sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %f %f", &p12, &p13, &p26, &p27);
+                
+                  // Krok B: Vytáhneme priority a proudy (14, 17, 20)
+                  // Indexy: ... 13 14(P11) 15 16 17(P16) 18 19 20(P01)
+                  sscanf(buffer.c_str(), "(%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %d %*s %*s %d %*s %*s %d", &p11, &charg_prio, &out_prio);
+                
+                  // Krok C: Vytáhneme skutečné P13 z konce (23. pozice)
+                  sscanf(buffer.c_str(), "(%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %f", &p13);
+                
+                  // Odeslání do HA (jen pokud jsou hodnoty platné)
+                  if (p11 > 0) id(utility_charge_current).publish_state(p11);
+                  if (p12 > 0) id(back_to_grid_volt).publish_state(p12);
+                  if (p13 > 0) id(back_to_full_volt).publish_state(p13);
+                  if (p26 > 0) id(bulk_volt).publish_state(p26);
+                  if (p27 > 0) id(float_volt).publish_state(p27);
+                
+                  // Priority
+                  if (charg_prio == 1) id(charger_priority).publish_state("Solar First (CSO)");
+                  else if (charg_prio == 2) id(charger_priority).publish_state("Solar and Utility (SNU)");
+                  else if (charg_prio == 3) id(charger_priority).publish_state("Only Solar (OSO)");
+                
+                  if (out_prio == 0) id(output_priority).publish_state("Utility First (USB)");
+                  else if (out_prio == 1) id(output_priority).publish_state("Solar First (SUB)");
+                  else if (out_prio == 2) id(output_priority).publish_state("SBU Priority");
                 }
                 buffer.clear();
               } else if (c != '\n') {
