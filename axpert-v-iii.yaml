@@ -25,10 +25,22 @@ sensor:
     accuracy_decimals: 1
     
   - platform: template
+    name: "bulk_volt"
+    unit_of_measurement: "V"
+    id: bulk_volt
+    accuracy_decimals: 1
+    
+  - platform: template
+    name: "float_volt"
+    unit_of_measurement: "V"
+    id: float_volt
+    accuracy_decimals: 1
+    
+  - platform: template
     name: "p13"
     unit_of_measurement: "V"
     id: back_to_full_volt
-    accuracy_decimals: 1    
+    accuracy_decimals: 1        
 
 binary_sensor:
   - platform: template
@@ -120,8 +132,8 @@ interval:
                   //if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %*f %d %d", 
                   //    &p12, &p11, &p02) >= 2) {
                   // 1. ( 2. 3. 4. 5. 6. 7. 8. 9(P12) 10 ... 13(P11) 14(P16) ... 17(P01) ... 23(P13)
-                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %*f %*f %*f %d %d %*d %*d %d %*d %*d %d %*d %*d %f", 
-                      &p12, &p11, &charg_prio, &out_prio, &p13) >= 3) {                  
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %f %*f %d %d %*d %*d %d %*d %*d %d %*d %*d %f", 
+                      &p12, &p26, &p27, &p11, &charg_prio, &out_prio, &p13) >= 3) {                  
                   //  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %*f %f %f %*f %d %d %d %d",
                   //      &p12, &p26, &p27, &p11, &p02, &charg_prio, &out_prio, &p13) >= 1) {
     
@@ -130,6 +142,8 @@ interval:
                       // Aktualizace číselných hodnot (posuvníků)
                       id(back_to_grid_volt).publish_state(p12);
                       id(back_to_full_volt).publish_state(p13);
+                      id(bulk_volt).publish_state(p26);
+                      id(float_volt).publish_state(p27);
                 
                       // Aktualizace priority nabíjení
                       if (charg_prio == 1) id(charger_priority).publish_state("Solar First (CSO)");
