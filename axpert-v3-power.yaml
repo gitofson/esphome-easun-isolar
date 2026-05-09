@@ -1,3 +1,25 @@
+substitutions:
+  # Tato substituce obsahuje celý blok C++ kódu pro výpočet CRC
+  # Vloží se do každé lambdy, kde použiješ ${calc_crc_cpp}
+  calc_crc_cpp: |-
+    auto calc_crc = [](const uint8_t *data, uint16_t len) -> uint16_t {
+      uint16_t crc = 0;
+      static const uint16_t table[] = {
+        0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
+        0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef
+      };
+      for (uint16_t i = 0; i < len; i++) {
+        uint8_t d = data[i];
+        uint8_t da = ((uint8_t)(crc >> 8)) >> 4;
+        crc <<= 4;
+        crc ^= table[da ^ (d >> 4)];
+        da = ((uint8_t)(crc >> 8)) >> 4;
+        crc <<= 4;
+        crc ^= table[da ^ (d & 0x0f)];
+      }
+      return crc;
+    };
+    
 uart:
   id: uart_bus
   tx_pin: ${uart_tx_pin}
