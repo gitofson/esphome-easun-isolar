@@ -23,6 +23,12 @@ sensor:
     unit_of_measurement: "V"
     id: pv_voltage
     accuracy_decimals: 1
+    
+  - platform: template
+    name: "p13"
+    unit_of_measurement: "V"
+    id: back_to_full_volt
+    accuracy_decimals: 1    
 
 binary_sensor:
   - platform: template
@@ -105,7 +111,7 @@ interval:
                 // 2. QPIRI - Nastavení (Délka cca 97)
                 else if (buffer.length() > 90) {
                   int out_prio, charg_prio, p11, p02;
-                  float p12, p13;
+                  float p12, p13, p26, p27;
                   // Parsování: 9.(p12), 10.(p13), 16.(charg_prio), 17.(out_prio)
                     // ( 1. 2. 3. 4. 5. 6. 7. 8. 9(P12) 10 11 12 13 14(P11) 15(P02)
                   //if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %*f %*f %*f %*f %d %d", 
@@ -113,14 +119,17 @@ interval:
                   // ( 1. 2. 3. 4. 5. 6. 7. 8. 9(P12) 10(P13) 11 12 13 14(P11) 15(P02)
                   //if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %*f %d %d", 
                   //    &p12, &p11, &p02) >= 2) {
-                    if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %*f %d %d %d %d",
-                        &p12, &p13, &p11, &p02, &charg_prio, &out_prio) >= 1) {
+                  // 1. ( 2. 3. 4. 5. 6. 7. 8. 9(P12) 10 ... 13(P11) 14(P16) ... 17(P01) ... 23(P13)
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %*f %*f %*f %d %d %*d %*d %d %*d %*d %d %*d %*d %f", 
+                      &p12, &p11, &charg_prio, &out_prio, &p13) >= 3) {                  
+                  //  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %*f %f %f %*f %d %d %d %d",
+                  //      &p12, &p26, &p27, &p11, &p02, &charg_prio, &out_prio, &p13) >= 1) {
     
                       // Get pro Program 11 (Max Utility Charge Current)
                       id(utility_charge_current).publish_state(p11);
                       // Aktualizace číselných hodnot (posuvníků)
                       id(back_to_grid_volt).publish_state(p12);
-                      //id(back_to_full_volt).publish_state(p13);
+                      id(back_to_full_volt).publish_state(p13);
                 
                       // Aktualizace priority nabíjení
                       if (charg_prio == 1) id(charger_priority).publish_state("Solar First (CSO)");
