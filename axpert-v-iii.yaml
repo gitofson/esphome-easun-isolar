@@ -103,20 +103,26 @@ interval:
                 } 
                 // 2. QPIRI - Nastavení (Délka cca 97)
                 else if (buffer.length() > 90) {
-                int out_prio, charg_prio;
-                // Vytáhneme 16. (charg_prio) a 17. (out_prio) parametr
-                if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %*f %d %d", &charg_prio, &out_prio) >= 1) {
-                    
-                    // Aktualizace priority nabíjení
-                    if (charg_prio == 1) id(charger_priority).publish_state("Solar First (CSO)");
-                    else if (charg_prio == 2) id(charger_priority).publish_state("Solar and Utility (SNU)");
-                    else if (charg_prio == 3) id(charger_priority).publish_state("Only Solar (OSO)");
+                  int out_prio, charg_prio;
+                  float p12, p13;
+                  // Parsování: 9.(p12), 10.(p13), 16.(charg_prio), 17.(out_prio)
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*f %*f %*f %*f %f %f %*f %*f %*f %*f %*f %d %d", 
+                             &p12, &p13, &charg_prio, &out_prio) >= 2) {
+                      
+                      // Aktualizace číselných hodnot (posuvníků)
+                      id(back_to_grid_volt).publish_state(p12);
+                      //id(back_to_full_volt).publish_state(p13);
                 
-                    // Aktualizace priority výstupu (již máš hotovo)
-                    if (out_prio == 0) id(output_priority).publish_state("Utility First (USB)");
-                    else if (out_prio == 1) id(output_priority).publish_state("Solar First (SUB)");
-                    else if (out_prio == 2) id(output_priority).publish_state("SBU Priority");
-                }
+                      // Aktualizace priority nabíjení
+                      if (charg_prio == 1) id(charger_priority).publish_state("Solar First (CSO)");
+                      else if (charg_prio == 2) id(charger_priority).publish_state("Solar and Utility (SNU)");
+                      else if (charg_prio == 3) id(charger_priority).publish_state("Only Solar (OSO)");
+                  
+                      // Aktualizace priority výstupu
+                      if (out_prio == 0) id(output_priority).publish_state("Utility First (USB)");
+                      else if (out_prio == 1) id(output_priority).publish_state("Solar First (SUB)");
+                      else if (out_prio == 2) id(output_priority).publish_state("SBU Priority");
+                  }
                 }
                 buffer.clear();
               } else if (c != '\n') {
