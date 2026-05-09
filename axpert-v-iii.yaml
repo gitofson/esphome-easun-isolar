@@ -92,6 +92,7 @@ interval:
             if (id(uart_bus).read_byte(&byte)) {
               char c = (char)byte;
               if (c == '\r') {
+                ESP_LOGI("monitor", "DELKA: %d | DATA: %s", buffer.length(), buffer.c_str());
                 // 1. QPIGS - Provozní data (Délka cca 109)
                 if (buffer.length() > 100) {
                   float v_batt, p_load, v_pv;
