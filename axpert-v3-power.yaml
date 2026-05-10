@@ -299,7 +299,7 @@ interval:
                 
                   // Krok B: Vytáhneme priority a proudy (14, 17, 20)
                   // Indexy: ... 13 14(P11) 15 16 17(P16) 18 19 20(P01)
-                  sscanf(buffer.c_str(), "(%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %d %*s %*s %d %*s %*s %d", &p11, &charg_prio, &out_prio);
+                  sscanf(buffer.c_str(), "(%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %d %*s %*s %d %d", &p11, &out_prio, &charg_prio );
                 
                   // Krok C: Vytáhneme skutečné P13 z konce (23. pozice)
                   sscanf(buffer.c_str(), "(%*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %*s %f", &p13);
