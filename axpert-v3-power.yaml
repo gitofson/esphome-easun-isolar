@@ -39,11 +39,17 @@ sensor:
     accuracy_decimals: 2
     
   - platform: template
-    name: "Výkon zátěže"
+    name: "Output active power"
     unit_of_measurement: "W"
-    id: load_power
+    id: output_active_power
     accuracy_decimals: 0
 
+  - platform: template
+    name: "Output apparent power"
+    unit_of_measurement: "W"
+    id: output_apparent_power
+    accuracy_decimals: 0
+    
   - platform: template
     name: "Napětí panelů"
     unit_of_measurement: "V"
@@ -268,13 +274,14 @@ interval:
                 ESP_LOGI("monitor", "DELKA: %d | DATA: %s", buffer.length(), buffer.c_str());
                 // 1. QPIGS - Provozní data (Délka cca 109)
                 if (buffer.length() > 100) {
-                  float v_batt, p_load, v_pv;
-                  int i_charge, i_discharge, p_pv;
+                  float v_batt, v_pv;
+                  int i_charge, i_discharge, p_pv, p_apparent_load, p_active_load;
                   // Mapa: ( AC_V AC_F Out_V Out_F VA W % Bus V_Batt(9) I_Ch(10) Cap Temp I_PV V_PV(14) ... I_Disch(16) ... P_PV(21)
-                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %*d %d %*d %*d %f %d %*d %*d %*f %f %*f %d %*s %*s %*s %d %*d", 
-                      &p_load, &v_batt, &i_charge, &v_pv, &i_discharge, &p_pv) >= 4) {
+                  if (sscanf(buffer.c_str(), "(%*f %*f %*f %*f %d %d %*d %*d %f %d %*d %*d %*f %f %*f %d %*s %*s %*s %d %*d", 
+                      &p_apparent_load, &p_active_load, &v_batt, &i_charge, &v_pv, &i_discharge, &p_pv) >= 4) {
                       id(batt_voltage).publish_state(v_batt);
-                      id(load_power).publish_state(p_load);
+                      id(output_apparent_power).publish_state(p_apparent_load);
+                      id(output_active_power).publish_state(p_active_load);
                       id(pv_voltage).publish_state(v_pv);
                       id(batt_charge_current).publish_state(i_charge);
                       id(batt_discharge_current).publish_state(i_discharge);
