@@ -797,4 +797,15 @@ select:
     use_write_multiple: yes 
     optionsmap:
       "USE - User defined": 2
-      "Li4 - Protocol 2 from inverter supplier": 6      
+      "Li4 - Protocol 2 from inverter supplier": 6
+  - platform: modbus_controller
+    entity_category: "config"  # Tímto se v HA přesune do sekce nastavení
+    modbus_controller_id: easun_inv
+    name: "Input Mode"
+    address: 0x02A5
+    value_type: U_WORD
+    use_write_multiple: yes 
+    optionsmap:
+      "APL - Appliance": 0
+      "UPS - UPS": 1
+      "GNT - Generator and Line": 2
