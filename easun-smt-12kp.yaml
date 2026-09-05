@@ -14,6 +14,10 @@ uart:
   baud_rate: 2400     # Tvoje neprůstřelná rychlost ověřená osciloskopem
   stop_bits: 1
 
+time:
+  - platform: sntp
+    id: ha_time
+    
 easun_smt_iii:
   id: easun
   uart_id: inverter_uart
