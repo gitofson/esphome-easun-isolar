@@ -95,7 +95,9 @@ wifi:
 substitutions:
   uart_tx_pin: GPIO6
   uart_rx_pin: GPIO7
-
+#    file: easun-smg-ii.yaml #rj45 pinout (inverter side): Tx, Rx, GND, NC, +14V
+#    file: axpert-v3-power.yaml #rj45 pinout (inverter side): Tx, Rx, GND, NC, +14V
+#    file: easun-smg-12kp.yaml #rj45 pinout (inverter side): NC, +12V, Tx, NC, GND, Rx 
 packages:
   easun_logic:
     url: https://github.com/gitofson/esphome-easun-isolar
