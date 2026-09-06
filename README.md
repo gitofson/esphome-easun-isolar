@@ -21,24 +21,41 @@ This project provides an ESPHome configuration and custom components to integrat
 > [!CAUTION]
 > Never connect the inverter's RJ45 port directly to the ESP32 pins! You must use an **RS232-to-TTL converter** (e.g., MAX3232). Direct connection will destroy your ESP32.
 
+### Inverter RJ45 Pinouts Comparison
+Depending on your inverter model, the RJ45 port layout differs. Please wire your cable accordingly:
+
+| Pin | SMG-II (`easun-smg-ii.yaml`) | Axpert V3 (`axpert-v3-power.yaml`) | **iSolar SMT 12KP** (`easun-smt-12kp.yaml`) |
+| :---: | :--- | :--- | :--- |
+| **Pin 1** | **RS232-TX** (Data from Inverter) | **RS232-TX** (Data from Inverter) | NC (Not Connected) |
+| **Pin 2** | **RS232-RX** (Data to Inverter) | **RS232-RX** (Data to Inverter) | **+12V DC** (Power output) |
+| **Pin 3** | **GND** (Common Ground) | **GND** (Common Ground) | **RS232-TX** (Data from Inverter) |
+| **Pin 4** | NC | NC | NC |
+| **Pin 5** | +14V DC (Power output) | +14V DC (Power output) | **GND** (Common Ground) |
+| **Pin 6** | NC | NC | **RS232-RX** (Data to Inverter) |
+| **Pin 7** | NC | NC | NC |
+| **Pin 8** | NC | NC | NC |
+
+---
+
 ### RJ45 to DB9 (Standard Inverter Cable)
-If you are using a standard RJ45-to-DB9 cable (often supplied with the inverter) and connecting it to a MAX3232 board with a DB9 connector:
+Wiring schematic when adapting the RJ45 port to a standard DB9 female connector on a MAX3232 board:
+
+#### For SMG-II & Axpert V3:
 
 | Inverter (RJ45) | DB9 Pin | Signal | Note |
 | :--- | :--- | :--- | :--- |
 | **Pin 1** | **Pin 2** | RS232-TX | Connects to DB9 RX |
 | **Pin 2** | **Pin 3** | RS232-RX | Connects to DB9 TX |
-| **Pin 8** | **Pin 5** | GND | Common Ground |
+| **Pin 3** | **Pin 5** | GND | Common Ground |
 
-### RS232-TTL Converter to ESP32 (C6 Example)
-Wiring between the converter module and your ESP:
+#### For iSolar SMT 12KP:
 
-| MAX3232 Module | ESP32-C6 Pin | Description |
-| :--- | :--- | :--- |
-| **VCC** | **3.3V** | Power (check your module voltage!) |
-| **GND** | **GND** | Ground |
-| **TXD** | **GPIO7** (RX) | Transmit to ESP Receive |
-| **RXD** | **GPIO6** (TX) | Receive from ESP Transmit |
+| Inverter (RJ45) | DB9 Pin | Signal | Note |
+| :--- | :--- | :--- | :--- |
+| **Pin 3** | **Pin 2** | RS232-TX | Connects to DB9 RX (Data from Inverter) |
+| **Pin 6** | **Pin 3** | RS232-RX | Connects to DB9 TX (Data to Inverter) |
+| **Pin 5** | **Pin 5** | GND | Common Ground |
+
 
 ## Quick Start
 
