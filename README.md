@@ -56,6 +56,8 @@ Wiring schematic when adapting the RJ45 port to a standard DB9 female connector 
 | **Pin 6** | **Pin 3** | RS232-RX | Connects to DB9 TX (Data to Inverter) |
 | **Pin 5** | **Pin 5** | GND | Common Ground |
 
+## Sponsoring
+If you find this project useful, you can support its development through [PayPal](https://www.paypal.com/paypalme/pastelina7).
 
 ## Quick Start
 
